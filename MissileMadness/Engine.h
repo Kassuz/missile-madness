@@ -1,6 +1,6 @@
 #pragma once
 
-// Here is all the includes necessary
+// Here is all the includes necessary for the engine
 
 // Basics
 #include "Types.h"

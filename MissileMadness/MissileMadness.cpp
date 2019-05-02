@@ -11,6 +11,8 @@
 #include <cmath>
 
 #include "Engine.h"
+#include "Player.h"
+#include "Game.h"
 
 const UInt32 SCREEN_WIDTH  = 800;
 const UInt32 SCREEN_HEIGHT = 600;
@@ -63,16 +65,15 @@ int main(int argc, char* argv[])
 	// ---------------------------------
 
 	Shader* spriteShader = ResourceManager::Instance().LoadShader("Sprite");
-	Texture2D* tex = ResourceManager::Instance().LoadTexture2D("../Character.png");
-
 	glm::mat4 projectionMatrix = glm::ortho(-(float)SCREEN_WIDTH / 2.0f, (float)SCREEN_WIDTH / 2.0f, -(float)SCREEN_HEIGHT / 2.0f, (float)SCREEN_HEIGHT / 2.0f, -1.0f, 1.0f);
-
 	SpriteRenderer::Instance().Init(spriteShader, projectionMatrix);
 
-	Transform transform;
+	/*Transform transform;
 	transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform.SetScale(glm::vec3(100.0f, 100.0f, 0.0f));
-	Sprite sprite(tex, Color::White(), &transform, 0);
+	Sprite sprite(tex, Color::White(), &transform, 0);*/
+
+	Game game(5);
 
 	// -------------------------------
 	// -          Main loop          -
@@ -83,33 +84,8 @@ int main(int argc, char* argv[])
 		// Update time
 		Time::Update();
 
-		
-		glm::vec2 up(0.0f, -1.0f);
-		glm::vec2 right(-1.0f, 0.0f);
-		glm::vec3 z(0.0f, 0.0f, 1.0f);
-		glm::vec2 dir = InputManager::Instance().GetMousePos() - glm::vec2((float)SCREEN_WIDTH / 2.0f, (float)SCREEN_HEIGHT / 2.0f);
-		dir = glm::normalize(dir);
-
-		float angle = glm::angle(up, dir) * std::copysign(1.0f, glm::dot(dir, right));
-		glm::quat rotation = glm::angleAxis(angle, glm::vec3(0.0f, 0.0f, 1.0f));
-		transform.SetRotation(rotation);
-		
-		float charSpeed = 150.0f;
-		glm::vec3 newPos = transform.GetPosition();
-		if (InputManager::Instance().GetKey(GLFW_KEY_W))
-			newPos += glm::vec3(0.0f, 1.0f, 0.0f) * Time::deltaTime * charSpeed;
-		if (InputManager::Instance().GetKey(GLFW_KEY_S))
-			newPos += glm::vec3(0.0f, -1.0f, 0.0f) * Time::deltaTime * charSpeed;
-		if (InputManager::Instance().GetKey(GLFW_KEY_D))
-			newPos += glm::vec3(1.0f, 0.0f, 0.0f) * Time::deltaTime * charSpeed;
-		if (InputManager::Instance().GetKey(GLFW_KEY_A))
-			newPos += glm::vec3(-1.0f, 0.0f, 0.0f) * Time::deltaTime * charSpeed;
-		transform.SetPosition(newPos);
-
-		if (InputManager::Instance().GetMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
-			sprite.spriteColor = Color::Black();
-		else if (InputManager::Instance().GetMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT))
-			sprite.spriteColor = Color::White();
+		// Update Game
+		game.Update();
 
 		// Rendering
 		glClearColor(0.35f, 0.35f, 0.35f, 1.0f);
