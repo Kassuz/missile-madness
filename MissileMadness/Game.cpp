@@ -2,6 +2,7 @@
 
 #include "Engine.h"
 #include "Player.h"
+#include "ProjectileManager.h"
 
 #include <glm/glm.hpp>
 
@@ -11,7 +12,7 @@ Game::Game(UInt32 playerCount)
 
 	for (UInt32 i = 0; i < playerCount; ++i)
 	{
-		auto p = std::make_unique<Player>(playerTexture);
+		auto p = std::make_unique<Player>(playerTexture, i == 0);
 
 		float posX = std::cos((i / (float)playerCount) * glm::two_pi<float>());
 		float posY = std::sin((i / (float)playerCount) * glm::two_pi<float>());
@@ -35,4 +36,7 @@ void Game::Update()
 	{
 		(*it)->Update();
 	}
+
+	// Update projectiles
+	ProjectileManager::Instance().Update();
 }

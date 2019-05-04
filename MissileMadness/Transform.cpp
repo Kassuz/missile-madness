@@ -33,7 +33,7 @@ void Transform::SetPosition(glm::vec3 pos)
 	invalidMatrix = true;
 }
 
-void Transform::Move(glm::vec3 movement)
+void Transform::Translate(glm::vec3 movement)
 {
 	this->position += movement;
 	invalidMatrix = true;

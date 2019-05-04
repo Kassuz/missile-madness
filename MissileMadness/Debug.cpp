@@ -8,6 +8,7 @@
 #include "Color.h"
 #include "Shader.h"
 #include "Types.h"
+#include "Time.h"
 
 HANDLE Debug::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 //Shader Debug::debugShader = Shader("../basic.vert", "../basic.frag");
@@ -15,7 +16,7 @@ HANDLE Debug::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 void Debug::Log(const std::string& text)
 {
 #ifdef _DEBUG
-	std::cout << "LOG   >> " << text << std::endl;
+	std::cout << "LOG   >> " << Time::GetTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 
@@ -25,7 +26,7 @@ void Debug::LogError(const std::string& text)
 	SetConsoleTextAttribute(hConsole, 12);
 	std::cout << "ERROR >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << text << std::endl;
+	std::cout << Time::GetTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 
@@ -36,7 +37,7 @@ void Debug::LogWarning(const std::string& text)
 	SetConsoleTextAttribute(hConsole, 14);
 	std::cout << "WARN  >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << text << std::endl;
+	std::cout << Time::GetTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 

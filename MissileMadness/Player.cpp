@@ -1,10 +1,11 @@
 #include "Player.h"
 #include "Engine.h"
+#include "ProjectileManager.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-Player::Player(Texture2D* playerTexture) : sprite(playerTexture, Color::White(), &this->transform, 0)
+Player::Player(Texture2D* playerTexture, bool controlledByUser) : sprite(playerTexture, Color::White(), &this->transform, 0), isControlledByUser(controlledByUser)
 {
 	transform.SetScale(glm::vec3(100.0f));
 }
@@ -16,6 +17,8 @@ Player::~Player()
 
 void Player::Update()
 {
+	if (!isControlledByUser) return;
+
 	// MOVEMENT
 	if (InputManager::Instance().GetKey(GLFW_KEY_D) || InputManager::Instance().GetKey(GLFW_KEY_RIGHT))
 	{
@@ -36,8 +39,29 @@ void Player::Update()
 		velocity -= transform.GetUp() * Time::deltaTime * acceleration;
 
 	velocity = glm::clamp(velocity, -maxSpeed, maxSpeed);
-	transform.Move(velocity * Time::deltaTime);
+	transform.Translate(velocity * Time::deltaTime);
 
 	velocity *= 0.98f;
 
+	// SHOOTING
+	if (projectileTimer > 0.0f)
+	{
+		projectileTimer -= Time::deltaTime;
+	}
+	else
+	{
+		if (InputManager::Instance().GetKeyDown(GLFW_KEY_SPACE))
+			ShootProjectile();
+	}
+}
+
+void Player::ShootProjectile()
+{
+	projectileTimer = projectileCooldown;
+
+	// Pew pew
+	Debug::Log("Pew pew");
+	//auto pos = transform.GetModel() * shootPos;
+	glm::vec3 missilePos = glm::vec3(transform.GetModel() * shootPos);
+	ProjectileManager::Instance().SpawnProjectile(this, missilePos, transform.GetUp());
 }

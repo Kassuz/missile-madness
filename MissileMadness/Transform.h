@@ -13,7 +13,7 @@ public:
 
 	glm::vec3 GetPosition() const;
 	void SetPosition(glm::vec3 pos);
-	void Move(glm::vec3 movement);
+	void Translate(glm::vec3 movement);
 
 	glm::vec3 GetScale() const;
 	void SetScale(glm::vec3 scale);
