@@ -17,14 +17,16 @@ public:
 
 	void Update();
 
+	std::vector<Projectile*> GetProjectiles() const { return projectiles; }
+
 private:
 	ProjectileManager();
 	~ProjectileManager();
+	ProjectileManager(const ProjectileManager& other) = delete;
+	ProjectileManager& operator=(const ProjectileManager& other) = delete;
+
 	
 	Texture2D* missileTexture;
-
-	float projectileLifetime = 2.0f;
-	float projectileSpeed = 500.0f;
 
 	std::vector<Projectile*> projectiles;
 };

@@ -3,8 +3,8 @@
 #include "Engine.h"
 
 
-Sprite::Sprite(Texture2D* texture, Color color, Transform* transform, Int32 renderLayer) 
-	: texture(texture), spriteColor(color), transform(transform), renderLayer(renderLayer)
+Sprite::Sprite(Texture2D* texture, Color color, GameObject* gameObject, Int32 renderLayer) 
+	: texture(texture), spriteColor(color), gameObject(gameObject), renderLayer(renderLayer)
 {
 	SpriteRenderer::Instance().RegisterSprite(this);
 }

@@ -4,6 +4,7 @@
 
 // Basics
 #include "Types.h"
+#include "Math.h"
 #include "Time.h"
 #include "Color.h"
 #include "Debug.h"

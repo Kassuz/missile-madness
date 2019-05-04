@@ -3,9 +3,9 @@
 #include "ProjectileManager.h"
 
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 
-Player::Player(Texture2D* playerTexture, bool controlledByUser) : sprite(playerTexture, Color::White(), &this->transform, 0), isControlledByUser(controlledByUser)
+Player::Player(Texture2D* playerTexture, float health, bool controlledByUser) 
+	: sprite(playerTexture, Color::White(), this, 0), health(health), maxHealth(health), isControlledByUser(controlledByUser)
 {
 	transform.SetScale(glm::vec3(100.0f));
 }
@@ -17,6 +17,7 @@ Player::~Player()
 
 void Player::Update()
 {
+	if (!isActive) return;
 	if (!isControlledByUser) return;
 
 	// MOVEMENT
@@ -53,6 +54,24 @@ void Player::Update()
 		if (InputManager::Instance().GetKeyDown(GLFW_KEY_SPACE))
 			ShootProjectile();
 	}
+}
+
+void Player::TakeDamage(float amount)
+{
+	this->health -= amount;
+
+	Debug::LogWarning("Player take damage. Current health: " + std::to_string(health));
+
+	if (IsDead())
+		SetActive(false);
+}
+
+void Player::Reset(glm::vec3 respawnPos)
+{
+	Debug::LogWarning("Player Respawn");
+	transform.SetPosition(respawnPos);
+	health = maxHealth;
+	SetActive(true);
 }
 
 void Player::ShootProjectile()

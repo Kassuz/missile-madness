@@ -7,10 +7,16 @@ class GameObject
 {
 
 public:
-	GameObject();
-	virtual ~GameObject();
+	GameObject() : transform() { }
+	virtual ~GameObject() { }
 
+	Transform* GetTransform() { return &transform; }
+
+	void SetActive(bool active) { isActive = active; }
+	bool IsActive() const { return isActive; }
+
+protected:
 	Transform transform;
-
+	bool isActive = true;
 };
 

@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 	transform.SetScale(glm::vec3(100.0f, 100.0f, 0.0f));
 	Sprite sprite(tex, Color::White(), &transform, 0);*/
 
-	Game game(5);
+	Game game(SCREEN_WIDTH, SCREEN_HEIGHT, 2);
 
 	// -------------------------------
 	// -          Main loop          -

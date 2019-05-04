@@ -7,6 +7,9 @@ class Transform
 {
 public:
 	Transform();
+	// No copying transforms
+	Transform(const Transform&) = delete;
+	Transform& operator=(const Transform&) = delete;
 
 	Transform* GetParent();
 	void SetParent(Transform* t);

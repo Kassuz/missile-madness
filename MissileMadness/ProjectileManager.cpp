@@ -20,7 +20,7 @@ ProjectileManager::~ProjectileManager()
 
 void ProjectileManager::SpawnProjectile(Player* owner, glm::vec3 position, glm::vec3 direction)
 {
-	Projectile* p = new Projectile(owner, missileTexture, position, projectileSpeed, direction, projectileLifetime);
+	Projectile* p = new Projectile(owner, missileTexture, position, direction);
 	projectiles.push_back(p);
 }
 
@@ -41,3 +41,4 @@ void ProjectileManager::Update()
 		}
 	}
 }
+

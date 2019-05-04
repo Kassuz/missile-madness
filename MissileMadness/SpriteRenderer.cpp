@@ -60,7 +60,7 @@ void SpriteRenderer::RenderSprites()
 	std::sort(sprites.begin(), sprites.end(), 
 		[](Sprite* a, Sprite* b) -> bool
 		{
-			return a->renderLayer < b->renderLayer;
+			return a->GetRenderLayer() < b->GetRenderLayer();
 		}
 	);
 
@@ -85,16 +85,18 @@ void SpriteRenderer::UnregisterSprite(Sprite* sprite)
 
 void SpriteRenderer::RenderIndividualSprite(Sprite* sprite)
 {
+	if (!sprite->GetGameObject()->IsActive()) return;
+
 	this->spriteShader->Use();
 
-	glm::mat4 model = sprite->transform->GetModel();
+	glm::mat4 model = sprite->GetGameObject()->GetTransform()->GetModel();
 
 	this->spriteShader->SetMat4("model", model);
 	this->spriteShader->SetMat4("projection", projectionMatrix);
-	this->spriteShader->SetVec4("spriteColor", sprite->spriteColor);
+	this->spriteShader->SetVec4("spriteColor", sprite->GetColor());
 
 	glActiveTexture(GL_TEXTURE0);
-	sprite->texture->Use();
+	sprite->GetTexture()->Use();
 
 	glBindVertexArray(this->quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
