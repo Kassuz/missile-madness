@@ -13,8 +13,12 @@ public:
 	static void LogWarning(const std::string& text);
 	static void LogError(const std::string& text);
 
-	static void DrawLine(glm::vec3 start, glm::vec3 end, Color color);
-	static void DrawCircle(glm::vec3 pos, float radius, Color color);
+	static void LogFormat(const char* inFormat, ...);
+	static void LogWarningFormat(const char* inFormat, ...);
+	static void LogErrorFormat(const char* inFormat, ...);
+
+	//static void DrawLine(glm::vec3 start, glm::vec3 end, Color color);
+	//static void DrawCircle(glm::vec3 pos, float radius, Color color);
 
 private:
 	Debug() = delete;

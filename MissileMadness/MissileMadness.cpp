@@ -78,7 +78,8 @@ int main(int argc, char* argv[])
 	// -------------------------------
 	// -          Main loop          -
 	// -------------------------------
-
+	TextRenderer::Instance().Init(SCREEN_WIDTH, SCREEN_HEIGHT);
+	TextRenderer::Instance().Load("Resources/Fonts/Roboto-Black.ttf", 30);
 	while (!glfwWindowShouldClose(window))
 	{
 		// Update time
@@ -91,6 +92,8 @@ int main(int argc, char* argv[])
 		glClearColor(0.35f, 0.35f, 0.35f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SpriteRenderer::Instance().RenderSprites();
+		// Render all text on top
+		TextRenderer::Instance().RenderAllText();
 
 		// Swap buffers
 		glfwSwapBuffers(window);

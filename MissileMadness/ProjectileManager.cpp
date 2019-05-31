@@ -11,7 +11,7 @@ ProjectileManager& ProjectileManager::Instance()
 
 ProjectileManager::ProjectileManager()
 {
-	missileTexture = ResourceManager::Instance().LoadTexture2D("../Missile.png");
+	missileTexture = ResourceManager::Instance().LoadTexture2D("Resources/Textures/Missile.png");
 }
 
 ProjectileManager::~ProjectileManager()

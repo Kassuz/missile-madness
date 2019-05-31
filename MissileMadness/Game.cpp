@@ -9,7 +9,7 @@
 
 Game::Game(UInt32 screenWidth, UInt32 screenHeight, UInt32 playerCount)
 {
-	Texture2D* playerTexture = ResourceManager::Instance().LoadTexture2D("../Character.png");
+	Texture2D* playerTexture = ResourceManager::Instance().LoadTexture2D("Resources/Textures/Character.png");
 
 	for (UInt32 i = 0; i < playerCount; ++i)
 	{
@@ -32,6 +32,7 @@ Game::Game(UInt32 screenWidth, UInt32 screenHeight, UInt32 playerCount)
 	walls[1] = Wall(bRight, tRight, glm::vec2(-1.0f, 0.0f));
 	walls[2] = Wall(bLeft, bRight, glm::vec2(0.0f, 1.0f));
 	walls[3] = Wall(bLeft, tLeft, glm::vec2(1.0f, 0.0f));
+
 
 }
 
@@ -63,6 +64,8 @@ void Game::Update()
 
 	// Check respawns
 	RespawnPlayers();
+
+	//TextRenderer::Instance().RenderText("Hello World!", 100, 100, 1);
 }
 
 void Game::HandleWallCollisions()

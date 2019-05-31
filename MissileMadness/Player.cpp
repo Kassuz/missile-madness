@@ -80,6 +80,7 @@ void Player::ShootProjectile()
 
 	// Pew pew
 	Debug::Log("Pew pew");
+	//TextRenderer::Instance().RenderText("Pew pew!", 300, 300, 1, 0.5f, Color::Red());
 	//auto pos = transform.GetModel() * shootPos;
 	glm::vec3 missilePos = glm::vec3(transform.GetModel() * shootPos);
 	ProjectileManager::Instance().SpawnProjectile(this, missilePos, transform.GetUp());

@@ -24,7 +24,7 @@ Shader* ResourceManager::LoadShader(const std::string& name)
 	if (shader != shaders.end())
 		return shader->second;
 
-	Shader* s = LoadShaderFromFile("../" + name + ".vert", "../" + name + ".frag");
+	Shader* s = LoadShaderFromFile("Resources/Shaders/" + name + ".vert", "Resources/Shaders/" + name + ".frag");
 	shaders.emplace(name, s);
 	return s;
 }

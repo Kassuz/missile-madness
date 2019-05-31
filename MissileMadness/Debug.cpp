@@ -20,6 +20,20 @@ void Debug::Log(const std::string& text)
 #endif // _DEBUG
 }
 
+void Debug::LogFormat(const char* inFormat, ...)
+{
+#ifdef _DEBUG
+	static char buff[4096];
+
+	va_list args;
+	va_start(args, inFormat);
+
+	_vsnprintf_s(buff, 4096, 4096, inFormat, args);
+
+	std::cout  << "LOG   >>" << Time::GetTime() << " >> " << buff << std::endl;
+#endif // _DEBUG
+}
+
 void Debug::LogError(const std::string& text)
 {
 #ifdef _DEBUG
@@ -30,6 +44,22 @@ void Debug::LogError(const std::string& text)
 #endif // _DEBUG
 }
 
+void Debug::LogErrorFormat(const char* inFormat, ...)
+{
+#ifdef _DEBUG
+	static char buff[4096];
+
+	va_list args;
+	va_start(args, inFormat);
+
+	_vsnprintf_s(buff, 4096, 4096, inFormat, args);
+
+	SetConsoleTextAttribute(hConsole, 12);
+	std::cout << "ERROR >> ";
+	SetConsoleTextAttribute(hConsole, 7);
+	std::cout << Time::GetTime() << " >> " << buff << std::endl;
+#endif // _DEBUG
+}
 
 void Debug::LogWarning(const std::string& text)
 {
@@ -41,23 +71,20 @@ void Debug::LogWarning(const std::string& text)
 #endif // _DEBUG
 }
 
-void Debug::DrawLine(glm::vec3 start, glm::vec3 end, Color color)
+void Debug::LogWarningFormat(const char* inFormat, ...)
 {
-	//UInt32 VAO, VBO;
-	//glGenVertexArrays(1, &VAO);
-	//glGenBuffers(1, &VBO);
+#ifdef _DEBUG
+	static char buff[4096];
 
-	//float vertices[] = { start.x, start.y, start.z, end.x, end.y, end.z };
+	va_list args;
+	va_start(args, inFormat);
 
-	//glBindVertexArray(VAO);
+	_vsnprintf_s(buff, 4096, 4096, inFormat, args);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-
-
-	//glDrawArrays(GL_LINES, 0, 6);
-
+	SetConsoleTextAttribute(hConsole, 14);
+	std::cout << "WARN  >> ";
+	SetConsoleTextAttribute(hConsole, 7);
+	std::cout << Time::GetTime() << " >> " << buff << std::endl;
+#endif // _DEBUG
 }
+

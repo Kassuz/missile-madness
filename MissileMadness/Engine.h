@@ -20,3 +20,4 @@
 #include "ResourceManager.h"
 #include "InputManager.h"
 #include "SpriteRenderer.h"
+#include "TextRenderer.h"

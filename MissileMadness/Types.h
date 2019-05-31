@@ -13,3 +13,5 @@ typedef uint32_t UInt32;
 
 typedef int64_t Int64;
 typedef uint64_t UInt64;
+
+typedef uint8_t Byte;
