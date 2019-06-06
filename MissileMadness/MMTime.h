@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 class Time
 {
 public:
@@ -17,5 +19,7 @@ private:
 
 	Time(const Time& other) = delete;
 	Time& operator=(const Time& other) = delete;
+
+	static const std::chrono::time_point<std::chrono::steady_clock> StartTime;
 };
 

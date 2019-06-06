@@ -77,7 +77,7 @@ void Game::HandleWallCollisions()
 		{
 			Transform* playerTransform = (*it)->GetTransform();
 			glm::vec2 playerPos = glm::vec2(playerTransform->GetPosition());
-			glm::vec2 pointOnWall = Math::ClosestPointOnLineSegment(playerPos, walls[i].GetStart(), walls[i].GetEnd());
+			glm::vec2 pointOnWall = ExtraMath::ClosestPointOnLineSegment(playerPos, walls[i].GetStart(), walls[i].GetEnd());
 			glm::vec2 toPlayer = playerPos - pointOnWall;
 
 			float dist = glm::length(toPlayer);

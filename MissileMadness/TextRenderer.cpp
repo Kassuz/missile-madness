@@ -4,10 +4,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "Debug.h"
-#include "TextRenderer.h"
-#include "ResourceManager.h"
-#include "Time.h"
+#include "Engine.h"
 
 void TextRenderer::Init(UInt32 width, UInt32 height)
 {

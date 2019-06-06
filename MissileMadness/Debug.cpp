@@ -8,7 +8,7 @@
 #include "Color.h"
 #include "Shader.h"
 #include "Types.h"
-#include "Time.h"
+#include "MMTime.h"
 
 HANDLE Debug::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 //Shader Debug::debugShader = Shader("../basic.vert", "../basic.frag");

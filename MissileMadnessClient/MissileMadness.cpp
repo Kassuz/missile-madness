@@ -68,6 +68,8 @@ int main(int argc, char* argv[])
 	glm::mat4 projectionMatrix = glm::ortho(-(float)SCREEN_WIDTH / 2.0f, (float)SCREEN_WIDTH / 2.0f, -(float)SCREEN_HEIGHT / 2.0f, (float)SCREEN_HEIGHT / 2.0f, -1.0f, 1.0f);
 	SpriteRenderer::Instance().Init(spriteShader, projectionMatrix);
 
+	TextRenderer::Instance().Init(SCREEN_WIDTH, SCREEN_HEIGHT);
+	TextRenderer::Instance().Load("Resources/Fonts/Roboto-Black.ttf", 30);
 	/*Transform transform;
 	transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform.SetScale(glm::vec3(100.0f, 100.0f, 0.0f));
@@ -78,8 +80,6 @@ int main(int argc, char* argv[])
 	// -------------------------------
 	// -          Main loop          -
 	// -------------------------------
-	TextRenderer::Instance().Init(SCREEN_WIDTH, SCREEN_HEIGHT);
-	TextRenderer::Instance().Load("Resources/Fonts/Roboto-Black.ttf", 30);
 	while (!glfwWindowShouldClose(window))
 	{
 		// Update time

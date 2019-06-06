@@ -4,17 +4,18 @@
 
 // Basics
 #include "Types.h"
-#include "Math.h"
-#include "Time.h"
+#include "ExtraMath.h"
+#include "MMTime.h"
 #include "Color.h"
 #include "Debug.h"
 #include "Transform.h"
 
-#include "GameObject.h"
 #include "Shader.h"
 #include "Texture2D.h"
 #include "Sprite.h"
 
+#include "GameObject.h"
+#include "Networking/NetworkedGameObject.h"
 
 // Mangers
 #include "ResourceManager.h"
