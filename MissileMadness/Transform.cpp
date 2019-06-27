@@ -5,7 +5,7 @@
 
 Transform::Transform() : position(glm::vec3(0.0f)), scale(glm::vec3(1.0f)), rotation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f)), parent(nullptr)
 {
-	model = glm::mat4();
+	model = glm::mat4(1.0f);
 	model = glm::scale(model, scale);
 	model = glm::toMat4(rotation) * model;
 	model = glm::translate(model, position);
@@ -92,7 +92,7 @@ glm::mat4 Transform::GetModel()
 {
 	if (invalidMatrix)
 	{
-		model = glm::mat4();
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, position) * glm::toMat4(rotation) * glm::scale(model, scale);
 		//model = glm::scale(model, scale);
 		//model = glm::toMat4(rotation) * model;

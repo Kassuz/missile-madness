@@ -30,7 +30,7 @@ void Debug::LogFormat(const char* inFormat, ...)
 
 	_vsnprintf_s(buff, 4096, 4096, inFormat, args);
 
-	std::cout  << "LOG   >>" << Time::GetTime() << " >> " << buff << std::endl;
+	std::cout  << "LOG   >> " << Time::GetTime() << " >> " << buff << std::endl;
 #endif // _DEBUG
 }
 

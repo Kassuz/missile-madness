@@ -1,22 +1,31 @@
 #include <iostream>
 
 #include "Engine.h"
-#include <Windows.h>
+#include "NetworkManagerServer.h"
+
+#include "Networking/TestObj.h"
 
 int main(int argc, char* argv[])
 {
-#ifdef _SERVER
+	std::cout << "Server started" << std::endl;
 
-	std::cout << "Server working!" << std::endl;
-	Time::GetTime();
-	for (int i = 0; i < 10.0f; i++)
+	NetworkManagerServer::Instance().Initialize();
+
+	Time::SetFixedTimeStep(30U);
+
+	TestObj* test = NetworkManagerServer::Instance().CreateNetworkedGameObject<TestObj>();
+	
+
+	while (true)
 	{
 		Time::Update();
-		Debug::Log("<< That's time!");
-		Sleep(200);
+
+		test->SetServerTime(Time::GetTime());
+		test->IncreaseCounter();
+
+		NetworkManagerServer::Instance().ProcessIncomingPackets();
+		NetworkManagerServer::Instance().UpdateSendingPackets();
 	}
-	system("pause");
-#endif // _SERVER
 
 	return 0;
 }

@@ -12,6 +12,7 @@ public:
 	static void Update();
 	
 	static float GetTime();
+	static void SetFixedTimeStep(unsigned int framerate);
 
 private:
 	Time() = delete;
@@ -21,5 +22,6 @@ private:
 	Time& operator=(const Time& other) = delete;
 
 	static const std::chrono::time_point<std::chrono::steady_clock> StartTime;
+	static float minDelta;
 };
 

@@ -172,13 +172,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\Libraries\glad.c" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="glad.c" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="ExtraMath.cpp" />
     <ClCompile Include="Networking\MemoryBitStream.cpp" />
     <ClCompile Include="Networking\SocketUtil.cpp" />
+    <ClCompile Include="Networking\TestObj.cpp" />
     <ClCompile Include="Networking\UDPSocket.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -204,6 +205,8 @@
     <ClInclude Include="Networking\NetworkedGameObject.h" />
     <ClInclude Include="Networking\NetworkManager.h" />
     <ClInclude Include="Networking\Sockets.h" />
+    <ClInclude Include="Networking\TestObj.h" />
+    <ClInclude Include="Networking\User.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="ProjectileManager.h" />

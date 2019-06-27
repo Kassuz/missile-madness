@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_access.hpp>
 #include <glm/ext.hpp>
 
 #include <iostream>
@@ -13,6 +14,8 @@
 #include "Engine.h"
 #include "Player.h"
 #include "Game.h"
+#include "NetworkManagerClient.h"
+#include "Networking/TestObj.h"
 
 const UInt32 SCREEN_WIDTH  = 800;
 const UInt32 SCREEN_HEIGHT = 600;
@@ -23,6 +26,32 @@ void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 m
 
 int main(int argc, char* argv[])
 {
+	// Cool logo
+	std::cout << "  /\\/\\ (_)___ ___(_) | ___    /\\/\\   __ _  __| |_ __   ___  ___ ___ " << std::endl;
+	std::cout << " /    \\| / __/ __| | |/ _ \\  /    \\ / _` |/ _` | '_ \\ / _ \\/ __/ __|" << std::endl;
+	std::cout << "/ /\\/\\ \\ \\__ \\__ \\ | |  __/ / /\\/\\ \\ (_| | (_| | | | |  __/\\__ \\__ \\" << std::endl;
+	std::cout << "\\/    \\/_|___/___/_|_|\\___| \\/    \\/\\__,_|\\__,_|_| |_|\\___||___/___/" << std::endl;
+
+	std::cout << "\n" << std::endl;
+	std::cout << ">> Enter your name: ";
+
+	std::string name;
+	std::getline(std::cin, name);
+	std::cout << std::endl;
+	
+	NetworkManagerClient::Instance().Initialize();
+	NetworkManagerClient::Instance().InitUser(name);
+	NetworkManagerClient::Instance().RegisterCreationFunc('TOBJ', TestObj::CreateInstance);
+
+	while (true)
+	{
+		Time::Update();
+
+		NetworkManagerClient::Instance().UpdateSendingPackets();
+		NetworkManagerClient::Instance().ProcessIncomingPackets();
+	}
+
+	return 0;
 	// ---------------------------------------
 	// -     Init GLFW and GLAD (OpenGL)     -
 	// ---------------------------------------
@@ -70,12 +99,9 @@ int main(int argc, char* argv[])
 
 	TextRenderer::Instance().Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	TextRenderer::Instance().Load("Resources/Fonts/Roboto-Black.ttf", 30);
-	/*Transform transform;
-	transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	transform.SetScale(glm::vec3(100.0f, 100.0f, 0.0f));
-	Sprite sprite(tex, Color::White(), &transform, 0);*/
 
 	Game game(SCREEN_WIDTH, SCREEN_HEIGHT, 2);
+
 
 	// -------------------------------
 	// -          Main loop          -

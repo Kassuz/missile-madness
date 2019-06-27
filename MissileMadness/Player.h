@@ -33,10 +33,10 @@ private:
 	float health;
 
 	float maxSpeed = 350.0f;
-	float rotateSpeed = 0.05f;
+	float rotateSpeed = 5.0f;
 
-	float acceleration = 1000.0f;
-	glm::vec3 velocity = glm::vec3(0.0f);
+	//float acceleration = 1000.0f;
+	//glm::vec3 velocity = glm::vec3(0.0f);
 
 	float projectileCooldown = 0.1f;
 	float projectileTimer = 0.0f;

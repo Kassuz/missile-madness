@@ -66,6 +66,16 @@ void Game::Update()
 	RespawnPlayers();
 
 	//TextRenderer::Instance().RenderText("Hello World!", 100, 100, 1);
+	frameTimes[currentframe++ % 50] = Time::deltaTime;
+	if (currentframe > 50)
+	{
+		float sum = 0;
+		for (int i = 0; i < 50; ++i)
+			sum += frameTimes[i];
+		sum = 50.0f / sum;
+		int fps = (int)sum;
+		TextRenderer::Instance().RenderText(std::to_string(fps), 10.0, 10.0, 1.0, 0.0, Color::Cyan());
+	}
 }
 
 void Game::HandleWallCollisions()

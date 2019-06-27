@@ -53,9 +53,6 @@
     <ClCompile Include="Texture2D.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>3rd party\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stb_image.cpp">
       <Filter>3rd party\Source Files</Filter>
     </ClCompile>
@@ -88,6 +85,12 @@
     </ClCompile>
     <ClCompile Include="MMTime.cpp">
       <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\Libraries\glad.c">
+      <Filter>3rd party\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Networking\TestObj.cpp">
+      <Filter>_Networking\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +164,12 @@
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Networking\NetworkedGameObject.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\User.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\TestObj.h">
       <Filter>_Networking\Headers</Filter>
     </ClInclude>
   </ItemGroup>

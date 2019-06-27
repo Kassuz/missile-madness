@@ -60,5 +60,8 @@ private:
 	const float respawnTime = 3.0f;
 	std::unordered_map<Player*, float> respawns;
 	void RespawnPlayers();
+
+	float frameTimes[50];
+	int currentframe;
 };
 
