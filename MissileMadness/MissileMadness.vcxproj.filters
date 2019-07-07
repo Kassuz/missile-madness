@@ -86,11 +86,11 @@
     <ClCompile Include="MMTime.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\Libraries\glad.c">
-      <Filter>3rd party\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Networking\TestObj.cpp">
       <Filter>_Networking\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>3rd party\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
