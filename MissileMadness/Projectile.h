@@ -1,41 +1,35 @@
 #pragma once
 
-#include "GameObject.h"
-#include "Sprite.h"
+#include "Networking/NetworkedGameObject.h"
+
+//#include "Sprite.h"
 #include <glm/glm.hpp>
 
-class Texture2D;
 class Player;
 
-class Projectile : public GameObject
+class Projectile : public NetworkedGameObject
 {
 public:
-	Projectile(Player* owner, Texture2D* missileTexture, glm::vec3 position, glm::vec3 direction);
-	virtual ~Projectile();
+	CLASS_IDENTIFICATION('MISS', Projectile);
+
+	virtual void Write(OutputMemoryBitStream& packet) override;
+	virtual void Read(InputMemoryBitStream& packet) override;
+
+	virtual ~Projectile() { }
 	//No making copies of projectiles
 	Projectile(const Projectile&) = delete;
 	Projectile& operator=(const Projectile&) = delete;
 
-	void Update();
-	bool ShouldBeDestroyed() { return hasHit || lifeTimer >= projectileLifetime; }
-	void ProjectileHit() { hasHit = true; }
+	Player* GetOwner() const { return m_Owner; }
 
-	Player* GetOwner() const { return owner; }
+protected:
+	Projectile(UInt32 networkID) : NetworkedGameObject(networkID) 
+	{
+		m_Transform.SetScale(k_ProjectileScale);
+	}
 
-	constexpr float GetProjectileDamage() { return projectileDamage; }
+	Player* m_Owner = nullptr;
 
-private:
-
-	Player* owner;
-	Sprite sprite;
-
-	const float projectileLifetime = 2.0f;
-	const float projectileSpeed = 500.0f;
-	const float projectileDamage = 150.0f;
-
-	float lifeTimer = 0.0f;
-	glm::vec3 velocity;
-
-	bool hasHit = false;
+	const glm::vec3 k_ProjectileScale = glm::vec3(30.0f, 30.0f, 1.0f);
 };
 

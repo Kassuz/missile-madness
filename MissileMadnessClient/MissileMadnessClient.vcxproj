@@ -153,10 +153,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClientGame.cpp" />
+    <ClCompile Include="ClientPlayer.cpp" />
+    <ClCompile Include="ClientProjectile.cpp" />
     <ClCompile Include="MissileMadness.cpp" />
     <ClCompile Include="NetworkManagerClient.cpp" />
+    <ClCompile Include="ClientRPCs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClientGame.h" />
+    <ClInclude Include="ClientPlayer.h" />
+    <ClInclude Include="ClientProjectile.h" />
+    <ClInclude Include="ClientRPCs.h" />
     <ClInclude Include="NetworkManagerClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,6 +3,8 @@
 #include <string>
 #include <glm/vec3.hpp>
 
+#include "Types.h"
+
 struct Color;
 class Shader;
 
@@ -30,3 +32,15 @@ private:
 	//static Shader debugShader;
 };
 
+inline std::string ConvertUIntToString(UInt32 value)
+{
+	char buffer[5];
+
+	buffer[0] = (value >> 24) & 0xFF;
+	buffer[1] = (value >> 16) & 0xFF;
+	buffer[2] = (value >>  8) & 0xFF;
+	buffer[3] = value & 0xFF;
+	buffer[4] = '\0';
+
+	return std::string(buffer);
+}

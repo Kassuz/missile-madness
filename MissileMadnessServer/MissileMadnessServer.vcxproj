@@ -135,7 +135,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="NetworkManagerServer.cpp" />
+    <ClCompile Include="ProjectileManager.cpp" />
+    <ClCompile Include="RPCManagerServer.cpp" />
+    <ClCompile Include="ServerGame.cpp" />
     <ClCompile Include="ServerMain.cpp" />
+    <ClCompile Include="ServerPlayer.cpp" />
+    <ClCompile Include="ServerProjectile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MissileMadness\MissileMadness.vcxproj">
@@ -144,6 +149,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkManagerServer.h" />
+    <ClInclude Include="ProjectileManager.h" />
+    <ClInclude Include="RPCManagerServer.h" />
+    <ClInclude Include="ServerGame.h" />
+    <ClInclude Include="ServerPlayer.h" />
+    <ClInclude Include="ServerProjectile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -62,11 +62,13 @@ void OutputMemoryBitStream::Write(const glm::vec3& inVector)
 
 void OutputMemoryBitStream::Write(const glm::quat& inQuat)
 {
-	float precision = (2.f / 65535.f);
-	Write(ConvertToFixed(inQuat.x, -1.f, precision), 16);
-	Write(ConvertToFixed(inQuat.y, -1.f, precision), 16);
-	Write(ConvertToFixed(inQuat.z, -1.f, precision), 16);
-	Write(inQuat.w < 0);
+	// 16bit fixed representation is enough for quats. 
+	// W can be calcluated from other components, only thing neededf is sign
+	float precision = (2.f / 65535.0f);
+	Write(ConvertToFixed(inQuat.x, -1.0f, precision), 16);
+	Write(ConvertToFixed(inQuat.y, -1.0f, precision), 16);
+	Write(ConvertToFixed(inQuat.z, -1.0f, precision), 16);
+	Write(inQuat.w < 0.0f);
 }
 
 void OutputMemoryBitStream::ReallocBuffer(UInt32 inNewBitLength)
@@ -159,21 +161,21 @@ void InputMemoryBitStream::Read(glm::quat& outQuat)
 {
 	float precision = (2.f / 65535.f);
 
-	uint32_t f = 0;
+	UInt32 f = 0;
 
 	Read(f, 16);
-	outQuat.x = ConvertFromFixed(f, -1.f, precision);
+	outQuat.x = ConvertFromFixed(f, -1.0f, precision);
 	Read(f, 16);
-	outQuat.y = ConvertFromFixed(f, -1.f, precision);
+	outQuat.y = ConvertFromFixed(f, -1.0f, precision);
 	Read(f, 16);
-	outQuat.z = ConvertFromFixed(f, -1.f, precision);
+	outQuat.z = ConvertFromFixed(f, -1.0f, precision);
 
-	outQuat.w = sqrtf(1.f -	outQuat.x * outQuat.x + outQuat.y * outQuat.y + outQuat.z * outQuat.z);
+	outQuat.w = sqrtf(1.f -	outQuat.x * outQuat.x - outQuat.y * outQuat.y - outQuat.z * outQuat.z);
 	bool isNegative;
 	Read(isNegative);
 
 	if (isNegative)
-		outQuat.w *= -1;
+		outQuat.w *= -1.0f;
 }
 
 void InputMemoryBitStream::HexDump() const

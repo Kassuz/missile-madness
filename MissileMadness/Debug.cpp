@@ -87,4 +87,3 @@ void Debug::LogWarningFormat(const char* inFormat, ...)
 	std::cout << Time::GetTime() << " >> " << buff << std::endl;
 #endif // _DEBUG
 }
-

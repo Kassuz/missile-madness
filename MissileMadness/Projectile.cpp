@@ -1,28 +1,33 @@
 #include "Projectile.h"
 #include "Engine.h"
 
+#include "Player.h"
+
 #include <glm/gtx/quaternion.hpp>
 
-Projectile::Projectile(Player* owner, Texture2D* missileTexture, glm::vec3 position, glm::vec3 direction)
-	: owner(owner), sprite(missileTexture, Color::White(), this, 1)
+void Projectile::Write(OutputMemoryBitStream& packet)
 {
-	velocity = glm::normalize(direction) * projectileSpeed;
-	transform.SetPosition(position);
-	transform.SetScale(glm::vec3(30.0f, 30.0f, 1.0f));
-	
-	float angle = -std::atan2(direction.x, direction.y);
-	glm::quat rot(std::cos(angle / 2.0f), 0.0f, 0.0f, std::sin(angle / 2.0f));
-	transform.SetRotation(rot);
+	packet.Write(GetNetworkID());
+	packet.Write(GetClassID());
+
+	packet.Write(m_Transform.GetPosition());
+	packet.Write(m_Transform.GetRotation());
+
+	//packet.Write(m_Owner->GetNetworkID());
 }
 
-Projectile::~Projectile()
+void Projectile::Read(InputMemoryBitStream& packet)
 {
+	// NetworkID and CLassID read elsewhere
+	glm::vec3 pos;
+	glm::quat rot;
+
+	packet.Read(pos);
+	packet.Read(rot);
+
+	m_Transform.SetPosition(pos);
+	m_Transform.SetRotation(rot);
 }
 
-void Projectile::Update()
-{
-	if (!isActive) return;
 
-	transform.Translate(velocity * Time::deltaTime);
-	lifeTimer += Time::deltaTime;
-}
+

@@ -6,6 +6,8 @@
 
 #include <glm/glm.hpp>
 
+#include "../Debug.h"
+
 class GameObject;
 
 inline UInt32 ConvertToFixed(float inNumber, float inMin, float inPrecision)
@@ -126,7 +128,8 @@ public:
 		ReadBits(&inData, inBitCount);
 	}
 
-	void Read(bool& outData) { ReadBits(&outData, 1); }
+	// Hacky hack. Value is read to UInt32, because converting bool to void* increases it's size and memset doesn't work properly
+	void Read(bool& outData) { UInt32 temp; ReadBits(&temp, 1); outData = static_cast<bool>(temp); }
 
 	void Read(glm::quat& outQuat);
 	void Read(glm::vec3& inVector);

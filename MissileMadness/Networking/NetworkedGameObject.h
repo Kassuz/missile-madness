@@ -4,6 +4,7 @@
 #include "../Types.h"
 
 #include "MemoryBitStream.h"
+#include "SerializableObject.h"
 
 // Macro for generating class identification for classes that derive from NetworkedGameObject
 // Must be included in every derived class
@@ -13,7 +14,7 @@ virtual UInt32 GetClassID() const override { return kClassId; } \
 static NetworkedGameObject* CreateInstance(UInt32 networkID) { return static_cast<NetworkedGameObject*>(new inClass(networkID)); } 
 
 // NetworkedGameObjects should be only created thorugh NetworkManager!
-class NetworkedGameObject : public GameObject
+class NetworkedGameObject : public GameObject, public SerializableObject
 {
 public:
 
@@ -21,8 +22,8 @@ public:
 
 	UInt32 GetNetworkID() { return m_NetworkID; }
 
-	virtual void Write(OutputMemoryBitStream& output) = 0;
-	virtual void Read(InputMemoryBitStream& input) = 0;
+	//virtual void Write(OutputMemoryBitStream& output) = 0;
+	//virtual void Read(InputMemoryBitStream& input) = 0;
 
 
 	virtual ~NetworkedGameObject() {}

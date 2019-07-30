@@ -1,19 +1,28 @@
+// OpenGL
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+// Math
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/ext.hpp>
 
+// STD
 #include <iostream>
 #include <string>
 #include <cmath>
 
+// Engine
 #include "Engine.h"
-#include "Player.h"
-#include "Game.h"
+
+// Client specific
+#include "ClientPlayer.h"
+#include "ClientGame.h"
+#include "Move.h"
+
+// Networking
 #include "NetworkManagerClient.h"
 #include "Networking/TestObj.h"
 
@@ -42,6 +51,11 @@ int main(int argc, char* argv[])
 	NetworkManagerClient::Instance().Initialize();
 	NetworkManagerClient::Instance().InitUser(name);
 	NetworkManagerClient::Instance().RegisterCreationFunc('TOBJ', TestObj::CreateInstance);
+	NetworkManagerClient::Instance().RegisterCreationFunc('PLAY', ClientGame::CreatePlayer);
+	NetworkManagerClient::Instance().RegisterCreationFunc('MISS', ClientGame::CreateMissile);
+
+	// Lock client to 60fps
+	Time::SetFixedTimeStep(60U);
 
 	while (true)
 	{
@@ -49,9 +63,14 @@ int main(int argc, char* argv[])
 
 		NetworkManagerClient::Instance().UpdateSendingPackets();
 		NetworkManagerClient::Instance().ProcessIncomingPackets();
+
+		if (NetworkManagerClient::Instance().GameShouldStart())
+			break;
+		else if (NetworkManagerClient::Instance().GetClientState() == NetworkManagerClient::ClientState::DISCONNECTED)
+			return 0;
 	}
 
-	return 0;
+
 	// ---------------------------------------
 	// -     Init GLFW and GLAD (OpenGL)     -
 	// ---------------------------------------
@@ -93,16 +112,17 @@ int main(int argc, char* argv[])
 	// -          Init Engine          -
 	// ---------------------------------
 
-	Shader* spriteShader = ResourceManager::Instance().LoadShader("Sprite");
 	glm::mat4 projectionMatrix = glm::ortho(-(float)SCREEN_WIDTH / 2.0f, (float)SCREEN_WIDTH / 2.0f, -(float)SCREEN_HEIGHT / 2.0f, (float)SCREEN_HEIGHT / 2.0f, -1.0f, 1.0f);
-	SpriteRenderer::Instance().Init(spriteShader, projectionMatrix);
 
+	SpriteRenderer::Instance().Init(projectionMatrix);
 	TextRenderer::Instance().Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	TextRenderer::Instance().Load("Resources/Fonts/Roboto-Black.ttf", 30);
 
-	Game game(SCREEN_WIDTH, SCREEN_HEIGHT, 2);
 
-
+	// Start game
+	ClientGame game;
+	NetworkManagerClient::Instance().StartGame();
+	
 	// -------------------------------
 	// -          Main loop          -
 	// -------------------------------
@@ -110,6 +130,12 @@ int main(int argc, char* argv[])
 	{
 		// Update time
 		Time::Update();
+
+		// Process packets
+		NetworkManagerClient::Instance().ProcessIncomingPackets();
+		// Check disconnect
+		if (NetworkManagerClient::Instance().GetClientState() == NetworkManagerClient::ClientState::DISCONNECTED)
+			break;
 
 		// Update Game
 		game.Update();
@@ -127,6 +153,9 @@ int main(int argc, char* argv[])
 		// Update inputmanager and poll for events
 		InputManager::Instance().Update();
 		glfwPollEvents();
+
+		// Send packets
+		NetworkManagerClient::Instance().UpdateSendingPackets();
 	}
 
 	glfwTerminate();

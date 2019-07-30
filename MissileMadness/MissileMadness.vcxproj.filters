@@ -30,6 +30,15 @@
     <Filter Include="3rd party\Source Files">
       <UniqueIdentifier>{3c3fd090-6887-4d41-be89-950b4e47f491}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{34cc5590-9f5a-467a-91d5-75d0c115135d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Header Files">
+      <UniqueIdentifier>{863266d0-bc2e-4ab7-8079-d24baa67b11b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Source Files">
+      <UniqueIdentifier>{636b37b1-8519-4c69-a42d-24a745ef573d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InputManager.cpp">
@@ -56,18 +65,6 @@
     <ClCompile Include="stb_image.cpp">
       <Filter>3rd party\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Engine\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Engine\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Projectile.cpp">
-      <Filter>Engine\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProjectileManager.cpp">
-      <Filter>Engine\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
@@ -91,6 +88,21 @@
     </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>3rd party\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Networking\User.cpp">
+      <Filter>_Networking\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Shared\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Move.cpp">
+      <Filter>Shared\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile.cpp">
+      <Filter>Shared\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Networking\RPCManager.cpp">
+      <Filter>_Networking\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,18 +145,6 @@
     <ClInclude Include="stb_image.h">
       <Filter>3rd party\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Projectile.h">
-      <Filter>Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProjectileManager.h">
-      <Filter>Engine\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextRenderer.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
@@ -170,6 +170,24 @@
       <Filter>_Networking\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Networking\TestObj.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\SerializableObject.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Shared\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Move.h">
+      <Filter>Shared\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.h">
+      <Filter>Shared\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\RPCManager.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\SharedRPC.h">
       <Filter>_Networking\Headers</Filter>
     </ClInclude>
   </ItemGroup>

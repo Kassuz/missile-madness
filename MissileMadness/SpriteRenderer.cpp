@@ -24,9 +24,9 @@ SpriteRenderer::~SpriteRenderer()
 {
 }
 
-void SpriteRenderer::Init(Shader* spriteShader, glm::mat4 projectionMatrix)
+void SpriteRenderer::Init(glm::mat4 projectionMatrix)
 {
-	this->spriteShader = spriteShader;
+	this->spriteShader = ResourceManager::Instance().LoadShader("Sprite");
 	this->projectionMatrix = projectionMatrix;
 
 	GLuint VBO;

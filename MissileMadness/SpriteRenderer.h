@@ -12,7 +12,7 @@ class SpriteRenderer
 public:
 	static SpriteRenderer& Instance();
 
-	void Init(Shader* spriteShader, glm::mat4 projectionMatrix);
+	void Init(glm::mat4 projectionMatrix);
 	void RenderSprites();
 	void RegisterSprite(Sprite* sprite);
 	void UnregisterSprite(Sprite* sprite);

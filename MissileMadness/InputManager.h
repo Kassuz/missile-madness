@@ -9,7 +9,7 @@ class InputManager
 {
 public:
 
-	enum KeyState { KEY_UP, KEY_PRESSED, KEY_HELD, KEY_RELEASED };
+	enum class KeyState { KEY_UP, KEY_PRESSED, KEY_HELD, KEY_RELEASED }; //  if more is needed, remember to modify Move-class
 
 	static InputManager& Instance();
 
@@ -26,6 +26,9 @@ public:
 	bool GetMouseButton(Int32 button);
 	bool GetMouseButtonDown(Int32 button);
 	bool GetMouseButtonReleased(Int32 button);
+
+	KeyState GetKeyState(Int32 key);
+	KeyState GetMouseState(Int32 button);
 
 
 	glm::vec2 GetMousePos();

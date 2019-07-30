@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include "Engine.h"
+
 #include "NetworkManagerServer.h"
+#include "ServerGame.h"
 
 #include "Networking/TestObj.h"
 
@@ -11,21 +13,45 @@ int main(int argc, char* argv[])
 
 	NetworkManagerServer::Instance().Initialize();
 
-	Time::SetFixedTimeStep(30U);
-
-	TestObj* test = NetworkManagerServer::Instance().CreateNetworkedGameObject<TestObj>();
+	// Set server tick rate
+	Time::SetFixedTimeStep(60U);
 	
-
+	// Player register loop
 	while (true)
 	{
 		Time::Update();
 
-		test->SetServerTime(Time::GetTime());
-		test->IncreaseCounter();
-
 		NetworkManagerServer::Instance().ProcessIncomingPackets();
 		NetworkManagerServer::Instance().UpdateSendingPackets();
+
+		if (NetworkManagerServer::Instance().IsGameStarting())
+			break;
 	}
+
+
+	ServerGame game(800, 600, NetworkManagerServer::Instance().GetAllUsers());
+	NetworkManagerServer::Instance().StartGame();
+
+	// Game Loop
+	while (true)
+	{
+		Time::Update();
+
+		NetworkManagerServer::Instance().ProcessIncomingPackets();
+
+		game.Update();
+
+		NetworkManagerServer::Instance().UpdateSendingPackets();
+
+		NetworkManagerServer::Instance().CheckForDisconnectedUsers();
+
+		if (NetworkManagerServer::Instance().UserCount() == 0)
+		{
+			Debug::LogError("All Users have disconnected. End game!");
+			break;
+		}
+	}
+
 
 	return 0;
 }

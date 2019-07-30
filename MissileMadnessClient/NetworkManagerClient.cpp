@@ -2,6 +2,8 @@
 
 #include "Engine.h"
 
+#include "ClientRPCs.h"
+
 NetworkManagerClient& NetworkManagerClient::Instance()
 {
 	static NetworkManagerClient instance;
@@ -17,6 +19,11 @@ void NetworkManagerClient::Initialize()
 	m_ClientSocket->SetNonBlockingMode(true);
 
 	m_ClientState = ClientState::NOT_REGISTERED;
+
+	// Register RPC unwrap functions
+	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::UserDisconnedtRPC::k_RPCName, RPCUnwrap::UnwrapUserDisconnect);
+	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::DestroyNetworkedGameObject::k_RPCName, RPCUnwrap::UnwrapDestroyNetworkedGameObject);
+	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::SetNetworkedGameObjectActive::k_RPCName, RPCUnwrap::UnwrapSetNGOBJActive);
 }
 
 
@@ -53,6 +60,11 @@ void NetworkManagerClient::ProcessIncomingPackets()
 				break;
 			}
 		}
+		else if (recievedBytes == -WSAECONNRESET)
+		{
+			Debug::LogError("Server not responding!");
+			m_ClientState = ClientState::DISCONNECTED;
+		}
 	}
 }
 
@@ -61,12 +73,12 @@ void NetworkManagerClient::UpdateSendingPackets()
 	switch (m_ClientState)
 	{
 	case ClientState::NOT_INITIALIZED:
+	case ClientState::WAITING:
+	case ClientState::ENGINE_START:
 		// Do nothing
 		break;
 	case ClientState::NOT_REGISTERED:
 		SendHelloPacket();
-		break;
-	case ClientState::WAITING:
 		break;
 	case ClientState::REPLICATING:
 		SendInputs();
@@ -80,6 +92,8 @@ void NetworkManagerClient::InitUser(std::string userName)
 {
 	if (m_ClientUser != nullptr) delete m_ClientUser;
 	m_ClientUser = new User(userName, 0, true);
+
+	User::Me = m_ClientUser;
 }
 
 NetworkManagerClient::NetworkManagerClient()
@@ -108,6 +122,22 @@ void NetworkManagerClient::SendHelloPacket()
 
 void NetworkManagerClient::SendInputs()
 {
+	if (m_ClientUser->GetMoveCount() > 0 && Time::GetTime() >= m_NextInputSendTime)
+	{
+		//Debug::Log("Send moves to server");
+		m_NextInputSendTime = Time::GetTime() + k_InputSendIntervall;
+
+		OutputMemoryBitStream packet;
+		packet.Write(PacketType::REPLICATION_DATA, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+		packet.Write(m_ClientUser->GetUserID()); // Write user id just to be sure
+		m_ClientUser->WriteMoves(packet);
+
+		// Write ACK for recieved rpcs
+		packet.Write(m_RPCManager.GetLastProcessedRPC());
+
+		// Send
+		m_ClientSocket->SendTo(packet.GetBufferPtr(), packet.GetByteLength(), *m_ServerAddress);
+	}
 }
 
 void NetworkManagerClient::ProcessWelcomePacket(InputMemoryBitStream& packet)
@@ -142,7 +172,7 @@ void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
 
 	std::string userName;
 	UInt32 userID;
-	Debug::Log("Game start!\nUsers:");
+	Debug::Log("Game start! Users:");
 	for (int i = 0; i < userCount; ++i)
 	{
 		packet.Read(userName);
@@ -160,11 +190,15 @@ void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
 		}
 	}
 
-	m_ClientState = ClientState::REPLICATING;
+	m_GameShouldStart = true;
+	m_ClientState = ClientState::ENGINE_START;
 }
 
 void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 {
+	if (m_ClientState != ClientState::REPLICATING)
+		return;
+
 	UInt32 objCount;
 	packet.Read(objCount, 32);
 
@@ -186,6 +220,14 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 
 		obj->Read(packet);
 	}
+
+	// Read RPCs
+	m_RPCManager.HandleRPCs(packet);
+
+	// Last thing left is ACKs
+	UInt32 lastACKdMove;
+	packet.Read(lastACKdMove);
+	User::Me->AcknowlegeMoves(lastACKdMove);
 }
 
 

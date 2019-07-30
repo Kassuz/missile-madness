@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <queue>
 #include <memory>
 #include <unordered_map>
 
@@ -8,21 +9,26 @@
 
 #include "Types.h"
 
-class Player;
-class Texture2D;
+#include "ProjectileManager.h"
 
-class Game
+class ServerPlayer;
+class User;
+
+class ServerGame
 {
 
 public:
-	Game(UInt32 screenWidth, UInt32 screenHeight, UInt32 playerCount);
-	~Game();
+	ServerGame(UInt32 screenWidth, UInt32 screenHeight, std::vector<User*> users);
+	~ServerGame();
 
 	void Update();
+	void HandlePlayerDisconnect(ServerPlayer* player);
+
+	ProjectileManager& GetProjectileManager() { return m_ProjectileManager; }
 
 private:
-	std::vector<Player*> players;
-
+	std::vector<ServerPlayer*> m_Players;
+	std::queue<ServerPlayer*>  m_Disconnected;
 
 	struct Wall
 	{
@@ -47,21 +53,21 @@ private:
 		glm::vec2 start, end, normal;
 	};
 
-	Wall walls[4];
+	Wall m_Walls[4];
+	ProjectileManager m_ProjectileManager;
 	
-	const float playerColliderRadius = 35.0f;
-	const float missileColliderRadius = 10.0f;
-	const float collisionPushForce = 12.0f;
+	const float k_PlayerColliderRadius = 35.0f;
+	const float k_MissileColliderRadius = 10.0f;
+	const float k_CollisionPushForce = 12.0f;
 
 	void HandleWallCollisions();
 	void HandlePlayerToPlayerCollisions();
 	void HandleProjectileCollisons();
 
-	const float respawnTime = 3.0f;
-	std::unordered_map<Player*, float> respawns;
+	const float k_RespawnTime = 3.0f;
+	std::unordered_map<ServerPlayer*, float> m_Respawns;
 	void RespawnPlayers();
 
-	float frameTimes[50];
-	int currentframe;
+	
 };
 
