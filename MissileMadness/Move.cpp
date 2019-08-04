@@ -35,7 +35,7 @@ void Move::Write(OutputMemoryBitStream& output)
 	output.Write(m_UpState);
 	output.Write(m_DownState);
 	output.Write(m_SpaceState);
-	output.Write(m_Timestamp);
+	//output.Write(m_Timestamp);
 	output.Write(m_DeltaT);
 }
 
@@ -47,7 +47,7 @@ void Move::Read(InputMemoryBitStream& input)
 	input.Read(m_UpState);
 	input.Read(m_DownState);
 	input.Read(m_SpaceState);
-	input.Read(m_Timestamp);
+	//input.Read(m_Timestamp);
 	input.Read(m_DeltaT);
 }
 

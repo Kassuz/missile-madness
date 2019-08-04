@@ -183,7 +183,7 @@ void ServerGame::HandleProjectileCollisons()
 
 			if (dist < k_MissileColliderRadius + k_PlayerColliderRadius)
 			{
-				Debug::LogError("MISSILE HIT");
+				//Debug::LogError("MISSILE HIT");
 				(*pr)->ProjectileHit();
 				(*pl)->TakeDamage((*pr)->GetProjectileDamage());
 				break; // this missile should not hit anything anymore

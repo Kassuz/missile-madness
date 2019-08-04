@@ -17,6 +17,8 @@ public:
 
 	bool IsLocal();
 
+	void Update();
+
 private:
 	ClientPlayer(UInt32 networkID) : Player(networkID) { }
 

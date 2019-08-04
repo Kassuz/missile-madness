@@ -279,16 +279,19 @@ void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet,
 {
 	for (auto it : m_AddressToUserMap)
 	{
+		// Create copy of packet for client
+		OutputMemoryBitStream clientPacket(packet);
+
 		// ACKs present only when replication data is being sent
 		if (packetType == PacketType::REPLICATION_DATA)
 		{
 			// Write pending rpcs
-			m_RPCManager.WritePendingRPCs(it.second->GetUserID(), packet);
+			m_RPCManager.WritePendingRPCs(it.second->GetUserID(), clientPacket);
 			// Write acks
-			WriteACKs(packet, it.second);
+			WriteACKs(clientPacket, it.second);
 		}
 
-		m_ServerSocket->SendTo(packet.GetBufferPtr(), packet.GetByteLength(), it.first);
+		m_ServerSocket->SendTo(clientPacket.GetBufferPtr(), clientPacket.GetByteLength(), it.first);
 	}
 }
 

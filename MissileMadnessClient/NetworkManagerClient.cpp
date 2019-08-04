@@ -96,6 +96,16 @@ void NetworkManagerClient::InitUser(std::string userName)
 	User::Me = m_ClientUser;
 }
 
+User* NetworkManagerClient::GetUserWithID(UInt32 userID)
+{
+	for (auto u : m_Users)
+	{
+		if (u->GetUserID() == userID)
+			return u;
+	}
+	return nullptr;
+}
+
 NetworkManagerClient::NetworkManagerClient()
 {
 }
@@ -202,11 +212,15 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	UInt32 objCount;
 	packet.Read(objCount, 32);
 
+	//Debug::LogFormat("Read %u networked gameobjects", objCount);
+
 	for (int i = 0; i < objCount; ++i)
 	{
 		UInt32 networkID, classID;
 		packet.Read(networkID);
 		packet.Read(classID);
+
+		//Debug::LogFormat("Read %s with ID: %u", ConvertUIntToString(classID).c_str(), networkID);
 
 		NetworkedGameObject* obj = GetGameObject(networkID);
 		if (obj == nullptr)
@@ -225,9 +239,12 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	m_RPCManager.HandleRPCs(packet);
 
 	// Last thing left is ACKs
+	//packet.PrintStats();
 	UInt32 lastACKdMove;
 	packet.Read(lastACKdMove);
 	User::Me->AcknowlegeMoves(lastACKdMove);
+	//packet.PrintStats();
+
 }
 
 

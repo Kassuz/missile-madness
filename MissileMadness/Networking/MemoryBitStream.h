@@ -47,6 +47,16 @@ public:
 		ReallocBuffer(1500 * 8);
 	}
 
+	OutputMemoryBitStream(const OutputMemoryBitStream& other)
+	{
+		mBuffer = nullptr;
+		ReallocBuffer(1500 * 8);
+		memcpy(mBuffer, other.mBuffer, other.GetByteLength());
+
+		mBitHead = other.mBitHead;
+		mBitCapacity = other.mBitCapacity;
+	}
+
 	~OutputMemoryBitStream() { std::free(mBuffer); }
 
 	void WriteBits(Byte inData, UInt32 inBitCount);
@@ -148,7 +158,10 @@ public:
 	}
 
 	void HexDump() const;
-
+	void PrintStats() const 
+	{
+		printf("Stats for buffer:\n\tReadHead: %u\n\tBitCapasity: %u\n", mBitHead, mBitCapacity);
+	}
 
 private:
 	Byte* mBuffer;

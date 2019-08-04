@@ -60,10 +60,12 @@ void ServerPlayer::Update()
 			{
 				//if (m_ProjectileTimer <= 0.0f)
 				{
-					Debug::LogFormat("Player %s shoots", user->GetUsersName().c_str());
+					//Debug::LogWarningFormat("Player %s shoots", user->GetUsersName().c_str());
 					ShootProjectile();					
 				}
 			}
+
+			delete move;
 		}
 		else
 		{

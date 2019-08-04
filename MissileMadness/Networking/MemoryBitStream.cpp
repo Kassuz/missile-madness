@@ -63,7 +63,7 @@ void OutputMemoryBitStream::Write(const glm::vec3& inVector)
 void OutputMemoryBitStream::Write(const glm::quat& inQuat)
 {
 	// 16bit fixed representation is enough for quats. 
-	// W can be calcluated from other components, only thing neededf is sign
+	// W can be calcluated from other components, only thing needed is sign
 	float precision = (2.f / 65535.0f);
 	Write(ConvertToFixed(inQuat.x, -1.0f, precision), 16);
 	Write(ConvertToFixed(inQuat.y, -1.0f, precision), 16);

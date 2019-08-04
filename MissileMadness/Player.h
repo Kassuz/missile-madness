@@ -26,7 +26,10 @@ public:
 	const UInt32 GetUserID() const { return m_User; }
 
 protected:
-	Player(UInt32 networkID) : NetworkedGameObject(networkID) { }
+	Player(UInt32 networkID) : NetworkedGameObject(networkID) 
+	{
+		m_Transform.SetScale(glm::vec3(k_PlayerScale));
+	}
 
 	UInt32 m_User = 0U;
 

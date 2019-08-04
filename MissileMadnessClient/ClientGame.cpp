@@ -33,6 +33,14 @@ void ClientGame::Update()
 	Move* m = new Move(right, left, up, down, space, Time::GetTime(), Time::deltaTime);
 	//Debug::LogFormat("Create move %u, time: %f", m->GetID(), m->GetTimestamp());
 	User::Me->AddNewMove(m);
+	//if (space)
+	//	Debug::LogWarningFormat("Move no: %u, player shoots!", m->GetID());
+
+	// Update all players
+	for (auto p : s_Players)
+	{
+		p->Update();
+	}
 
 	// Show fps
 	m_FrameTimes[m_Currentframe++ % 50] = Time::deltaTime;

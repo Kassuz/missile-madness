@@ -24,7 +24,7 @@ class NetworkManager
 public:
 	typedef NetworkedGameObject* (*GameObjectCreationFunc)(UInt32);
 
-	const int k_MaxPacketsPerFrame = 20;
+	const int k_MaxPacketsPerFrame = 30;
 
 	virtual void Initialize() = 0;
 	virtual void ProcessIncomingPackets() = 0;

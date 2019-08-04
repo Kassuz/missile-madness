@@ -34,6 +34,7 @@ public:
 	void Load(std::string font, UInt32 fontSize);
 	// Renders a string of text using the precompiled list of characters
 	void RenderText(std::string text, float x, float y, float scale, float activeTime = 0.0f, Color color = Color::Black());
+	void RenderTextWorldSpace(std::string text, float x, float y, float scale, float activeTime = 0.0f, Color color = Color::Black());
 	void RenderAllText();
 
 private:
@@ -57,4 +58,6 @@ private:
 	};
 
 	RenderTextObj* renderHead;
+
+	UInt32 screenHeight = 0U, screenWidth = 0U;
 };

@@ -30,6 +30,8 @@ public:
 	const bool GameShouldStart() const { return m_GameShouldStart; }
 	void StartGame() { m_ClientState = ClientState::REPLICATING; }
 
+	User* GetUserWithID(UInt32 userID);
+
 protected:
 	NetworkManagerClient();
 	virtual ~NetworkManagerClient();

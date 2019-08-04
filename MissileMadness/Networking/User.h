@@ -45,7 +45,7 @@ private:
 	UInt32 m_MoveCount = 0U;
 	UInt32 m_LastProcessedMove = 0U;
 
-	const UInt32 k_MaxMovesToWrite = 10U;
+	const UInt32 k_MaxMovesToWrite = 30U;
 
 	float m_LastRecievedPacket = 0.0f;
 };

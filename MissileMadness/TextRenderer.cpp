@@ -8,6 +8,9 @@
 
 void TextRenderer::Init(UInt32 width, UInt32 height)
 {
+	screenWidth  = width;
+	screenHeight = height;
+
 	// Load and configure shader
 	this->textShader = ResourceManager::Instance().LoadShader("Text");
 	this->textShader->Use();
@@ -27,7 +30,6 @@ void TextRenderer::Init(UInt32 width, UInt32 height)
 
 TextRenderer& TextRenderer::Instance()
 {
-	// TODO: insert return statement here
 	static TextRenderer instance;
 	return instance;
 }
@@ -96,6 +98,14 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, f
 	textToRender->next = renderHead;
 	if (renderHead != nullptr) renderHead->previous = textToRender;
 	renderHead = textToRender;
+}
+
+void TextRenderer::RenderTextWorldSpace(std::string text, float x, float y, float scale, float activeTime, Color color)
+{
+	float newX = x + (screenWidth  / 2.0f);
+	float newY = y - (screenHeight / 2.0f);
+	if (newY < 0.0f) newY *= -1.0f;
+	RenderText(text, newX, newY, scale, activeTime, color);
 }
 
 void TextRenderer::RenderAllText()

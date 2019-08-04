@@ -28,7 +28,7 @@ void RPCManager::HandleRPCs(InputMemoryBitStream& packet)
 		packet.Read(id);
 		packet.Read(name);
 
-		Debug::LogFormat("Read RPC %s, with ID: %u. Last read: %u", ConvertUIntToString(name).c_str(), id, m_LastRPC);
+		//Debug::LogFormat("Read RPC %s, with ID: %u. Last read: %u", ConvertUIntToString(name).c_str(), id, m_LastRPC);
 
 		auto it = m_UnwrapFunctions.find(name);
 		if (it != m_UnwrapFunctions.end())
