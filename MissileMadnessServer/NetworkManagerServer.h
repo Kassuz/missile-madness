@@ -57,6 +57,7 @@ private:
 	UDPSocketPtr m_ServerSocket;
 
 	UInt32 m_NextUserID = 1; // 0 is reserved for not initialized users
+	UInt32 m_NextPacketID = 1; // Used for world state packets only
 
 	std::unordered_map<SocketAddress, User*> m_AddressToUserMap;
 	std::unordered_map<User*, SocketAddress> m_UserToAddressMap;
@@ -66,6 +67,9 @@ private:
 
 	void HandleHelloPacket(InputMemoryBitStream& packet, SocketAddress sender);
 	void HandleReplication(InputMemoryBitStream& packet, SocketAddress sender);
+
+	const float k_ReplicationSendIntervall = 1.0f / 15.0f;
+	float m_NextReplicationTime = 0.0f;
 
 	void SendWelcomePacket(SocketAddress dest);
 	void SendGameStartPacket();

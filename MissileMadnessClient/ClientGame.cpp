@@ -30,7 +30,7 @@ void ClientGame::Update()
 	bool down  = InputManager::Instance().GetKey(GLFW_KEY_S) || InputManager::Instance().GetKey(GLFW_KEY_DOWN);
 	bool space = InputManager::Instance().GetKeyDown(GLFW_KEY_SPACE);
 
-	Move* m = new Move(right, left, up, down, space, Time::GetTime(), Time::deltaTime);
+	Move* m = new Move(right, left, up, down, space, Time::GetTime());
 	//Debug::LogFormat("Create move %u, time: %f", m->GetID(), m->GetTimestamp());
 	User::Me->AddNewMove(m);
 	//if (space)
@@ -51,8 +51,11 @@ void ClientGame::Update()
 			sum += m_FrameTimes[i];
 		sum = 50.0f / sum;
 		int fps = (int)sum;
-		TextRenderer::Instance().RenderText(std::to_string(fps), 10.0, 10.0, 1.0, 0.0, Color::Cyan());
+		TextRenderer::Instance().RenderText(std::to_string(fps), 10.0f, 10.0f, 1.0f, 0.0f, Color::Cyan());
 	}
+
+	int rtt = NetworkManagerClient::Instance().GetRTT();
+	TextRenderer::Instance().RenderText("RTT: " + std::to_string(rtt) + "ms", 600.0f, 10.0f, 0.75f, 0.0f, Color::Cyan());
 }
 
 NetworkedGameObject* ClientGame::CreatePlayer(UInt32 networkID)

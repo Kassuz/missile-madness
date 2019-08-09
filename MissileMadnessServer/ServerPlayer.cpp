@@ -26,6 +26,7 @@ void ServerPlayer::Update()
 
 	for (UInt32 i = 0; i < k_MaxMovesPerUpdate; ++i)
 	{
+		float lastTimestamp = user->GetLastProcessedMoveTimestamp();
 		Move* move = user->GetFirstMove();
 
 		if (move != nullptr)
@@ -33,7 +34,7 @@ void ServerPlayer::Update()
 			// Dead players don't move, but moves should still be "used"
 			if (IsDead()) continue;
 
-			float deltaT = move->GetDeltaT();
+			float deltaT = move->GetTimestamp() - lastTimestamp;
 			if (move->GetRightState())
 			{
 				glm::quat rot = glm::angleAxis(-k_RotateSpeed * deltaT, glm::vec3(0.0f, 0.0f, 1.0f));

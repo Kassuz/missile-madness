@@ -108,6 +108,7 @@ User* NetworkManagerClient::GetUserWithID(UInt32 userID)
 
 NetworkManagerClient::NetworkManagerClient()
 {
+	memset(m_RTTs, 0, sizeof(m_RTTs));
 }
 
 
@@ -209,10 +210,23 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	if (m_ClientState != ClientState::REPLICATING)
 		return;
 
+	// PacketID
+	//------------------------------------------------------
+	UInt32 packetID;
+	packet.Read(packetID, 32);
+
+	if (m_LastProcessedPacketID >= packetID) // Packet is old, just drop it
+	{
+		Debug::LogWarningFormat("Drop old packet with ID: %U. Last processed %u.", packetID, m_LastProcessedPacketID);
+		return;
+	}
+
+	m_LastProcessedPacketID = packetID;
+
+	// Networked Objects
+	//------------------------------------------------------
 	UInt32 objCount;
 	packet.Read(objCount, 32);
-
-	//Debug::LogFormat("Read %u networked gameobjects", objCount);
 
 	for (int i = 0; i < objCount; ++i)
 	{
@@ -220,15 +234,13 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 		packet.Read(networkID);
 		packet.Read(classID);
 
-		//Debug::LogFormat("Read %s with ID: %u", ConvertUIntToString(classID).c_str(), networkID);
-
 		NetworkedGameObject* obj = GetGameObject(networkID);
 		if (obj == nullptr)
 			obj = CreateNetworkedGameObject(networkID, classID);
 
 		if (obj == nullptr)
 		{
-			Debug::LogError("Failed to create object. Can't read rest of the packet!");
+			Debug::LogErrorFormat("Failed to create object of type %s. Can't read rest of the packet!", ConvertUIntToString(classID).c_str());
 			return;
 		}
 
@@ -236,15 +248,36 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	}
 
 	// Read RPCs
+	//------------------------------------------------------
 	m_RPCManager.HandleRPCs(packet);
 
 	// Last thing left is ACKs
-	//packet.PrintStats();
-	UInt32 lastACKdMove;
-	packet.Read(lastACKdMove);
-	User::Me->AcknowlegeMoves(lastACKdMove);
-	//packet.PrintStats();
+	//------------------------------------------------------
+	float lastProcessedMove;
+	packet.Read(lastProcessedMove);
+	User::Me->AcknowlegeMoves(lastProcessedMove);
 
+	// Calculate RTT
+	//------------------------------------------------------
+	CalculateRTT(lastProcessedMove);
+}
+
+void NetworkManagerClient::CalculateRTT(float timestamp)
+{
+	if (timestamp > m_LastReadTimestamp) // This way the same timestamp wont throw off calculations
+	{
+		float rtt = Time::GetTime() - timestamp;
+		rtt *= 1000; // Get ms
+
+		m_RTTs[m_CurRTTIndex++ % 20] = rtt;
+
+		m_RTT = 0.0f;
+		for (int i = 0; i < 20; ++i)
+			m_RTT += m_RTTs[i];
+		m_RTT /= 20.0f;
+
+		m_LastReadTimestamp = timestamp;
+	}
 }
 
 

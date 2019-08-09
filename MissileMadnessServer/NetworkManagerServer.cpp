@@ -263,10 +263,19 @@ void NetworkManagerServer::SendGameStartPacket()
 
 void NetworkManagerServer::SendWorldState()
 {
+	if (Time::GetTime() < m_NextReplicationTime)
+		return;
+
+	m_NextReplicationTime = Time::GetTime() + k_ReplicationSendIntervall;
+
 	OutputMemoryBitStream packet;
 	packet.Write(PacketType::REPLICATION_DATA, GetRequiredBits<PacketType::MAX_PACKET>::Value);
-	packet.Write(m_NetworkIDTOGameObjMap.size(), 32);
 
+	// Write packet id
+	packet.Write(m_NextPacketID++, 32);
+
+	// Write all networked gameobjects
+	packet.Write(m_NetworkIDTOGameObjMap.size(), 32);
 	for (auto it : m_NetworkIDTOGameObjMap)
 	{
 		it.second->Write(packet);
@@ -282,7 +291,7 @@ void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet,
 		// Create copy of packet for client
 		OutputMemoryBitStream clientPacket(packet);
 
-		// ACKs present only when replication data is being sent
+		// ACKs and RPC present only when replication data is being sent
 		if (packetType == PacketType::REPLICATION_DATA)
 		{
 			// Write pending rpcs
@@ -298,5 +307,5 @@ void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet,
 void NetworkManagerServer::WriteACKs(OutputMemoryBitStream& packet, User* user)
 {
 	// Write last processed move for user, so client can update movelist accordingly
-	packet.Write(user->GetLastProcessedMoveID());
+	packet.Write(user->GetLastProcessedMoveTimestamp());
 }

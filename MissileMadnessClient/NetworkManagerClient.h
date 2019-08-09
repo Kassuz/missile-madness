@@ -32,6 +32,8 @@ public:
 
 	User* GetUserWithID(UInt32 userID);
 
+	float GetRTT() const { return m_RTT; };
+
 protected:
 	NetworkManagerClient();
 	virtual ~NetworkManagerClient();
@@ -56,11 +58,20 @@ private:
 	float m_NextInputSendTime = 0.0f;
 	const float k_InputSendIntervall = 1.0f / 30.0f;
 
+	UInt32 m_LastProcessedPacketID = 0;
+
 	void SendHelloPacket();
 	void SendInputs();
 
 	void ProcessWelcomePacket(InputMemoryBitStream& packet);
 	void ProcessGameStartPacket(InputMemoryBitStream& packet);
 	void ProcessReplicationData(InputMemoryBitStream& packet);
+
+	// Stuff for calculating RTT
+	float m_RTTs[20];
+	UInt32 m_CurRTTIndex = 0;
+	float m_RTT = 0.0f;
+	float m_LastReadTimestamp = 0.0f;
+	void CalculateRTT(float timestamp);
 };
 

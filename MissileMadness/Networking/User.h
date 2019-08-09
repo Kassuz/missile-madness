@@ -25,12 +25,12 @@ public:
 
 	void AddNewMove(Move* move);
 	Move* GetFirstMove();
-	void AcknowlegeMoves(UInt32 latestAcked);
+	void AcknowlegeMoves(float latestAcked);
 
 	void WriteMoves(OutputMemoryBitStream& packet);
 	void ReadMoves(InputMemoryBitStream& packet);
 
-	const UInt32 GetLastProcessedMoveID() const { return m_LastProcessedMove; }
+	const float GetLastProcessedMoveTimestamp() const { return m_LastProcessedMove; }
 	const UInt32 GetMoveCount() const { return m_MoveCount; }
 
 	const float GetLastRecievedPacketTime() const { return m_LastRecievedPacket; }
@@ -43,7 +43,7 @@ private:
 	
 	MoveList m_UserMoves = nullptr; // Could also track tail, so adding would be faster
 	UInt32 m_MoveCount = 0U;
-	UInt32 m_LastProcessedMove = 0U;
+	float m_LastProcessedMove = 0.0f;
 
 	const UInt32 k_MaxMovesToWrite = 30U;
 

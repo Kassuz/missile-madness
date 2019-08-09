@@ -5,16 +5,12 @@ User* User::Me = nullptr;
 
 void User::AddNewMove(Move* move)
 {
-	UInt32 newID = move->GetID();
-
-	//if (m_IsMe && m_UserName == "Kassu")
-	//	Debug::LogFormat("Try to add move %u", newID);
+	//UInt32 newID = move->GetID();
+	float newTime = move->GetTimestamp();
 	
-	if (newID <= m_LastProcessedMove)
+	//if (newID <= m_LastProcessedMove)
+	if (newTime <= m_LastProcessedMove)
 	{
-		// Move already processed
-		//if (m_UserName == "Kassu")
-		//	Debug::LogErrorFormat("Delete move %u, because already processed. Last %u", move->GetID(), m_LastProcessedMove);
 		delete move;
 		return;
 	}
@@ -22,29 +18,43 @@ void User::AddNewMove(Move* move)
 	if (m_UserMoves == nullptr)
 	{
 		m_UserMoves = move;
-
-		//if (!m_IsMe && m_UserName == "Kassu" && newID != m_LastProcessedMove + 1)
-		//Debug::LogErrorFormat("Skipped moves between %u - %u", m_LastProcessedMove, newID);
+	}
+	else if (newTime < m_UserMoves->GetTimestamp())
+	{
+		move->next = m_UserMoves;
+		m_UserMoves = move;
 	}
 	else
 	{
-		Move* last = m_UserMoves;
-		while (last->next != nullptr)
-			last = last->next;
-		UInt32 lastID = last != nullptr ? last->GetID() : 0U;
-
-		if (newID <= lastID)
+		Move* m = m_UserMoves;
+		while (m != nullptr)
 		{
-			//Move already in list
-			//if (m_UserName == "Kassu")
-			//	Debug::LogErrorFormat("Delete move %u, because already in list. Last %u", move->GetID(), m_LastProcessedMove);
-			delete move;
-			return;
+			Move* next = m->next;
+			if (m->GetTimestamp() == newTime)
+			{
+				// Move already in list
+				delete move;
+				return;
+			}
+			else if (newTime > m->GetTimestamp() && (next == nullptr || newTime < next->GetTimestamp()))
+			{
+				m->next = move;
+				move->next = next;
+				break;
+			}
+			m = next;
 		}
-		//else if (newID != lastID + 1)
-		//	Debug::LogErrorFormat("Skipped moves for user: %s", m_UserName.c_str());
+		//Move* last = m_UserMoves;
+		//while (last->next != nullptr)
+		//	last = last->next;
+		//UInt32 lastID = last != nullptr ? last->GetID() : 0U;
 
-		last->next = move;
+		//if (newID <= lastID)
+		//{
+		//	delete move;
+		//	return;
+		//}
+		//last->next = move;
 	}
 
 	m_MoveCount++;
@@ -57,22 +67,20 @@ Move* User::GetFirstMove()
 	{
 		m_UserMoves = first->next;
 		m_MoveCount--;
-		m_LastProcessedMove = first->GetID();
+		//m_LastProcessedMove = first->GetID();
+		m_LastProcessedMove = first->GetTimestamp();
 	}
 	return first;
 }
 
-void User::AcknowlegeMoves(UInt32 latestAcked)
+void User::AcknowlegeMoves(float latestAcked)
 {
-	//if (m_IsMe && m_UserName == "Kassu")
-	//	Debug::LogFormat("Acknowlege moves until %u", latestAcked);
-	
 	Move* m = m_UserMoves;
 
 	while (m != nullptr)
 	{
 		Move* next = m->next;
-		if (m->GetID() <= latestAcked)
+		if (m->GetTimestamp() <= latestAcked)
 		{
 			m_MoveCount--;
 			delete m;
@@ -97,35 +105,25 @@ void User::WriteMoves(OutputMemoryBitStream& packet)
 
 	packet.Write(moveCount);
 
-	//std::string movesStr = "";
 	Move* m = m_UserMoves;
 	while (m != nullptr)
 	{
 		if (skipCount < movesToSkip)
 		{
 			skipCount++;
-			//if (m_UserName == "Kassu")
-			//	Debug::LogErrorFormat("Skip writing move %u, too many moves. Last ACK: %u", m->GetID(), m_LastProcessedMove);
 		}
 		else
 		{
 			m->Write(packet);
-			//movesStr.append(std::to_string(m->GetID()));
-			//movesStr.append(" ");
 		}
 		m = m->next;
 	}
-
-	//if (m_UserName == "Kassu")
-	//	Debug::LogWarningFormat("Write moves: %s", movesStr.c_str());
 }
 
 void User::ReadMoves(InputMemoryBitStream& packet)
 {
 	UInt32 moveCount;
 	packet.Read(moveCount);
-
-	//Debug::LogFormat("User %s, Recieved %u moves", m_UserName.c_str(), moveCount);
 
 	for (int i = 0; i < moveCount; ++i)
 	{
