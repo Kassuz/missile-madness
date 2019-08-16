@@ -28,10 +28,11 @@ private:
 	Sprite* m_PlayerSprite = nullptr;
 
 	bool m_HasRecievedData = false;
-	glm::vec3 m_StartPos, m_InterpolatePos;
-	glm::quat m_StartRot, m_InterpolateRot;
+	glm::vec3 m_StartPos, m_ExtrapolatePos;
+	//glm::quat m_StartRot, m_InterpolateRot;
 
 	float m_LastDataTime = 0.0f;
+	float m_LocationOutOfSyncTime = 0.0f;
 
 	DebugPos* m_DebugPos = nullptr;
 };

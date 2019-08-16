@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 class Texture2D;
+class Move;
 
 class Player : public NetworkedGameObject
 {
@@ -25,6 +26,8 @@ public:
 
 	const UInt32 GetUserID() const { return m_User; }
 
+	void ProcessMove(Move* m, float deltaT);
+
 protected:
 	Player(UInt32 networkID) : NetworkedGameObject(networkID) 
 	{
@@ -39,6 +42,8 @@ protected:
 	const float k_MovementSpeed = 350.0f;
 	const float k_RotateSpeed = 5.0f;
 
+	glm::vec3 m_VelocityDir;
+
 	const float k_ProjectileCooldown = 0.1f;
 	float m_ProjectileTimer = 0.0f;
 
@@ -48,42 +53,5 @@ protected:
 
 };
 
-//class Player : public GameObject
-//{
-//public:
-//	Player(Texture2D* palyerTexture, float health, bool controlledByUser);
-//	virtual ~Player();
-//	// No making copies of players
-//	Player(const Player&) = delete;
-//	Player& operator=(const Player&) = delete;
-//
-//	void Update();
-//
-//	void TakeDamage(float amount);
-//	bool IsDead() { return health <= 0.0f; }
-//
-//	void Reset(glm::vec3 respawnPos);
-//
-//private:
-//
-//	Sprite sprite;
-//
-//	bool isControlledByUser = false;
-//
-//	const float maxHealth;
-//	float health;
-//
-//	float maxSpeed = 350.0f;
-//	float rotateSpeed = 5.0f;
-//
-//	//float acceleration = 1000.0f;
-//	//glm::vec3 velocity = glm::vec3(0.0f);
-//
-//	float projectileCooldown = 0.1f;
-//	float projectileTimer = 0.0f;
-//
-//	const glm::vec4 shootPos = glm::vec4(0.25f, 0.45f, 0.0f, 1.0f);
-//
-//	void ShootProjectile();
-//};
+
 

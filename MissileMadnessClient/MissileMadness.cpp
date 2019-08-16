@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
 	// Lock client to 60fps
 	Time::SetFixedTimeStep(60U);
 
+	// Wait for game to start
 	while (true)
 	{
 		Time::Update();
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
 	{
 		// Update time
 		Time::Update();
-
+		
 		// Process packets
 		NetworkManagerClient::Instance().ProcessIncomingPackets();
 		// Check disconnect
@@ -150,15 +151,15 @@ int main(int argc, char* argv[])
 		// Render all text on top
 		TextRenderer::Instance().RenderAllText();
 
-		// Swap buffers
+		// Send packets
+		NetworkManagerClient::Instance().UpdateSendingPackets();
+
+		// Swap buffers 
 		glfwSwapBuffers(window);
 
 		// Update inputmanager and poll for events
 		InputManager::Instance().Update();
 		glfwPollEvents();
-
-		// Send packets
-		NetworkManagerClient::Instance().UpdateSendingPackets();
 	}
 
 	glfwTerminate();

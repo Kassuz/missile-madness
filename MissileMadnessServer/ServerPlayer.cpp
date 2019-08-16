@@ -23,6 +23,8 @@ void ServerPlayer::Update()
 		m_Game->HandlePlayerDisconnect(this);
 		return;
 	}
+	
+	glm::vec3 oldPos = m_Transform.GetPosition();
 
 	for (UInt32 i = 0; i < k_MaxMovesPerUpdate; ++i)
 	{
@@ -34,28 +36,9 @@ void ServerPlayer::Update()
 			// Dead players don't move, but moves should still be "used"
 			if (IsDead()) continue;
 
+
 			float deltaT = move->GetTimestamp() - lastTimestamp;
-			if (move->GetRightState())
-			{
-				glm::quat rot = glm::angleAxis(-k_RotateSpeed * deltaT, glm::vec3(0.0f, 0.0f, 1.0f));
-				m_Transform.Rotate(rot);
-			}
-
-			if (move->GetLeftState())
-			{
-				glm::quat rot = glm::angleAxis(k_RotateSpeed * deltaT, glm::vec3(0.0f, 0.0f, 1.0f));
-				m_Transform.Rotate(rot);
-			}
-
-			if (move->GetUpState())
-			{
-				m_Transform.Translate(m_Transform.GetUp() * deltaT * k_MovementSpeed);
-			}
-
-			if(move->GetDownState())
-			{
-				m_Transform.Translate(-m_Transform.GetUp() * deltaT * k_MovementSpeed);
-			}
+			ProcessMove(move, deltaT);
 
 			if (move->GetSpaceState())
 			{
@@ -66,6 +49,7 @@ void ServerPlayer::Update()
 				}
 			}
 
+
 			delete move;
 		}
 		else
@@ -73,7 +57,13 @@ void ServerPlayer::Update()
 			break;
 		}
 	}
+	glm::vec3 dir = m_Transform.GetPosition() - oldPos;
+	if (glm::length(dir) > 1.0f)
+		m_VelocityDir = glm::normalize(dir);
+	else
+		m_VelocityDir = glm::vec3(0.0f);
 
+	//Debug::LogFormat("M_VelocityDir for player %u is: x: %f y: %f z: %f", m_User, m_VelocityDir.x, m_VelocityDir.y, m_VelocityDir.z);
 	//m_ProjectileTimer -= Time::deltaTime;
 }
 

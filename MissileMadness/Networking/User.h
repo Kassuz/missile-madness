@@ -24,7 +24,7 @@ public:
 	void SetIsMe(bool isMe) { m_IsMe = isMe; }
 
 	void AddNewMove(Move* move);
-	Move* GetFirstMove();
+	Move* GetFirstMove(bool peek = false);
 	void AcknowlegeMoves(float latestAcked);
 
 	void WriteMoves(OutputMemoryBitStream& packet);

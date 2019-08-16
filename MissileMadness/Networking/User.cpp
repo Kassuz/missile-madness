@@ -60,10 +60,10 @@ void User::AddNewMove(Move* move)
 	m_MoveCount++;
 }
 
-Move* User::GetFirstMove()
+Move* User::GetFirstMove(bool peek)
 {
 	Move* first = m_UserMoves;
-	if (first != nullptr)
+	if (first != nullptr && !peek)
 	{
 		m_UserMoves = first->next;
 		m_MoveCount--;
@@ -75,6 +75,8 @@ Move* User::GetFirstMove()
 
 void User::AcknowlegeMoves(float latestAcked)
 {
+	m_LastProcessedMove = latestAcked;
+
 	Move* m = m_UserMoves;
 
 	while (m != nullptr)
@@ -125,7 +127,7 @@ void User::ReadMoves(InputMemoryBitStream& packet)
 	UInt32 moveCount;
 	packet.Read(moveCount);
 
-	for (int i = 0; i < moveCount; ++i)
+	for (UInt32 i = 0; i < moveCount; ++i)
 	{
 		Move* m = new Move();
 		m->Read(packet);
