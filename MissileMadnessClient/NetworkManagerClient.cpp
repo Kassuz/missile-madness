@@ -3,6 +3,8 @@
 #include "Engine.h"
 
 #include "ClientRPCs.h"
+#include "ClientGame.h"
+#include "CommandLineArgs.h"
 
 NetworkManagerClient& NetworkManagerClient::Instance()
 {
@@ -106,9 +108,8 @@ User* NetworkManagerClient::GetUserWithID(UInt32 userID)
 	return nullptr;
 }
 
-NetworkManagerClient::NetworkManagerClient()
+NetworkManagerClient::NetworkManagerClient() : m_RTT(20), m_AvgDataIntervall(20)
 {
-	memset(m_RTTs, 0, sizeof(m_RTTs));
 }
 
 
@@ -201,6 +202,11 @@ void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
 		}
 	}
 
+	// Get replication data send intervall for interpolation
+	//float intervall;
+	//packet.Read(intervall);
+	//ClientGame::SetDataIntervall(intervall);
+
 	m_GameShouldStart = true;
 	m_ClientState = ClientState::ENGINE_START;
 }
@@ -208,6 +214,10 @@ void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
 void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 {
 	if (m_ClientState != ClientState::REPLICATING)
+		return;
+
+	// Check if packet sould be dropped
+	if (ExtraMath::GetRandomFloat() < CommandLineArgs::GetPacketLoss())
 		return;
 
 	// PacketID
@@ -219,6 +229,11 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	{
 		Debug::LogWarningFormat("Drop old packet with ID: %U. Last processed %u.", packetID, m_LastProcessedPacketID);
 		return;
+	}
+	else if (packetID > m_LastProcessedPacketID + 1)
+	{
+		// Packets have been dropped
+		m_DroppedPacketCount += packetID - m_LastProcessedPacketID - 1;
 	}
 
 	m_LastProcessedPacketID = packetID;
@@ -260,6 +275,12 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	// Calculate RTT
 	//------------------------------------------------------
 	CalculateRTT(lastProcessedMove);
+
+	if (m_LastRecievedPacket > 0.0f)
+		m_AvgDataIntervall.AddValue(Time::GetTime() - m_LastRecievedPacket);
+	else
+		m_AvgDataIntervall.AddValue(0.0f);
+	m_LastRecievedPacket = Time::GetTime();
 }
 
 void NetworkManagerClient::CalculateRTT(float timestamp)
@@ -267,15 +288,9 @@ void NetworkManagerClient::CalculateRTT(float timestamp)
 	if (timestamp > m_LastReadTimestamp) // This way the same timestamp wont throw off calculations
 	{
 		float rtt = Time::GetTime() - timestamp;
-		rtt *= 1000; // Get ms
+		//rtt *= 1000; // Get ms
 
-		m_RTTs[m_CurRTTIndex++ % 20] = rtt;
-
-		m_RTT = 0.0f;
-		for (int i = 0; i < 20; ++i)
-			m_RTT += m_RTTs[i];
-		m_RTT /= 20.0f;
-
+		m_RTT.AddValue(rtt);
 		m_LastReadTimestamp = timestamp;
 	}
 }

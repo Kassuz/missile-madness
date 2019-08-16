@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "ClientPlayer.h"
+#include "ClientProjectile.h"
+#include "ExtraMath.h"
 
 class Texture2D;
 
@@ -17,15 +19,21 @@ public:
 	static NetworkedGameObject* CreatePlayer(UInt32 networkID);
 	static NetworkedGameObject* CreateMissile(UInt32 networkID);
 	static void DisconnectPlayer(UInt32 userID);
+	static void RemoveProjectile(ClientProjectile*);
+
+	//static void SetDataIntervall(float intervall) { s_DataIntervall = intervall; }
 
 private:
 	// static bad :(
+	// TODO: Figure out better solution
 	static Texture2D* s_PlayerTexture;
 	static Texture2D* s_MissileTexture;
 
 	static std::vector<ClientPlayer*> s_Players;
+	static std::vector<ClientProjectile*> s_Projectiles;
 
-	float m_FrameTimes[50];
-	int m_Currentframe = 0;
+	//static float s_DataIntervall;
+
+	ExtraMath::AverageValue<float> m_AvgFrameTime;
 };
 

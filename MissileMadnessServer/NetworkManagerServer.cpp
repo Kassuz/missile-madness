@@ -257,6 +257,9 @@ void NetworkManagerServer::SendGameStartPacket()
 		packet.Write(u->GetUserID());
 	}
 
+	// Write replication packet send intervall, so clients can interpolate
+	//packet.Write(k_ReplicationSendIntervall);
+
 	// Send to all clients
 	SendPacketToAllClients(packet, PacketType::GAME_START);
 }

@@ -156,6 +156,7 @@
     <ClCompile Include="ClientGame.cpp" />
     <ClCompile Include="ClientPlayer.cpp" />
     <ClCompile Include="ClientProjectile.cpp" />
+    <ClCompile Include="CommandLineArgs.cpp" />
     <ClCompile Include="MissileMadness.cpp" />
     <ClCompile Include="NetworkManagerClient.cpp" />
     <ClCompile Include="ClientRPCs.cpp" />
@@ -165,6 +166,8 @@
     <ClInclude Include="ClientPlayer.h" />
     <ClInclude Include="ClientProjectile.h" />
     <ClInclude Include="ClientRPCs.h" />
+    <ClInclude Include="CommandLineArgs.h" />
+    <ClInclude Include="DebugPos.h" />
     <ClInclude Include="NetworkManagerClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -29,7 +29,7 @@ private:
 	const float k_ProjectileDamage = 150.0f;
 
 	float m_LifeTimer = 0.0f;
-	glm::vec3 m_Velocity;
+	
 
 	bool m_HasHit = false;
 

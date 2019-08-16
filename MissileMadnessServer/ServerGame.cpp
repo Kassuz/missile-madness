@@ -118,16 +118,22 @@ void ServerGame::HandleWallCollisions()
 			//Debug::Log("Player pos: " + std::to_string(playerPos.x) + " " + std::to_string(playerPos.y));
 			//Debug::Log("Wall pos: " + std::to_string(pointOnWall.x) + " " + std::to_string(pointOnWall.y));
 
-			if (glm::dot(toPlayer, m_Walls[i].GetNormal()) < 0.0f)
+			if (dist < k_PlayerColliderRadius || glm::dot(toPlayer, m_Walls[i].GetNormal()) < 0.0f)
 			{
-				glm::vec3 dir(m_Walls[i].GetNormal().x, m_Walls[i].GetNormal().y, 0.0f);
-				playerTransform->Translate(dir * (dist + k_PlayerColliderRadius) * Time::deltaTime * k_CollisionPushForce);
+				glm::vec2 pos = pointOnWall + glm::normalize(toPlayer) * k_PlayerColliderRadius;
+				playerTransform->SetPosition(glm::vec3(pos, 0.0f));
 			}
-			else if (dist < k_PlayerColliderRadius)
-			{
-				glm::vec3 dir(m_Walls[i].GetNormal().x, m_Walls[i].GetNormal().y, 0.0f);
-				playerTransform->Translate(dir * dist * Time::deltaTime * k_CollisionPushForce);
-			}
+
+			//if (glm::dot(toPlayer, m_Walls[i].GetNormal()) < 0.0f)
+			//{
+			//	glm::vec3 dir(m_Walls[i].GetNormal().x, m_Walls[i].GetNormal().y, 0.0f);
+			//	playerTransform->Translate(dir * (dist + k_PlayerColliderRadius) * Time::deltaTime * k_CollisionPushForce);
+			//}
+			//else if (dist < k_PlayerColliderRadius)
+			//{
+			//	glm::vec3 dir(m_Walls[i].GetNormal().x, m_Walls[i].GetNormal().y, 0.0f);
+			//	playerTransform->Translate(dir * dist * Time::deltaTime * k_CollisionPushForce);
+			//}
 		}
 	}
 }

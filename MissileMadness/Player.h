@@ -44,7 +44,7 @@ protected:
 
 	const float k_PlayerScale = 100.0f; // Player scale is constant
 
-	const glm::vec4 k_ShootPos = glm::vec4(0.25f, 0.45f, 0.0f, 1.0f);
+	const glm::vec4 k_ShootPos = glm::vec4(0.25f, 0.0f, 0.0f, 1.0f);
 
 };
 

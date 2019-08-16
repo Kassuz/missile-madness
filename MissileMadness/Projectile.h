@@ -30,6 +30,11 @@ protected:
 
 	Player* m_Owner = nullptr;
 
+	glm::vec3 m_Velocity;
+
 	const glm::vec3 k_ProjectileScale = glm::vec3(30.0f, 30.0f, 1.0f);
+
+	void Move(float deltaTime);
+	void SetRotation(glm::vec3 direction);
 };
 

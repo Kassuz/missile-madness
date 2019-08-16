@@ -7,6 +7,7 @@
 #include "Networking/RPCManager.h"
 
 #include "Move.h"
+#include "ExtraMath.h"
 
 constexpr auto SERVER_ADDRESS = "192.168.1.2:45000";
 //constexpr auto SERVER_ADDRESS = "127.0.0.1:45000";
@@ -32,7 +33,9 @@ public:
 
 	User* GetUserWithID(UInt32 userID);
 
-	float GetRTT() const { return m_RTT; };
+	float GetRTT() const { return m_RTT.GetAverage(); };
+	UInt32 GetDroppedPacketCount() const { return m_DroppedPacketCount; }
+	float GetServerSendRate() const { return m_AvgDataIntervall.GetAverage(); }
 
 protected:
 	NetworkManagerClient();
@@ -54,9 +57,8 @@ private:
 	float m_NextHelloTime = 0.0f;
 	const float k_HelloIntervall = 1.0f;
 
-	// Send inputs 30 times a second
 	float m_NextInputSendTime = 0.0f;
-	const float k_InputSendIntervall = 1.0f / 30.0f;
+	const float k_InputSendIntervall = 1.0f / 15.0f;
 
 	UInt32 m_LastProcessedPacketID = 0;
 
@@ -68,10 +70,13 @@ private:
 	void ProcessReplicationData(InputMemoryBitStream& packet);
 
 	// Stuff for calculating RTT
-	float m_RTTs[20];
-	UInt32 m_CurRTTIndex = 0;
-	float m_RTT = 0.0f;
+	ExtraMath::AverageValue<float> m_RTT;
 	float m_LastReadTimestamp = 0.0f;
 	void CalculateRTT(float timestamp);
+
+	UInt32 m_DroppedPacketCount = 0U;
+
+	ExtraMath::AverageValue<float> m_AvgDataIntervall;
+	float m_LastRecievedPacket = 0.0f;
 };
 

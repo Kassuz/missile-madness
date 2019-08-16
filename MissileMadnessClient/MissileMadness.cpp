@@ -21,6 +21,7 @@
 #include "ClientPlayer.h"
 #include "ClientGame.h"
 #include "Move.h"
+#include "CommandLineArgs.h"
 
 // Networking
 #include "NetworkManagerClient.h"
@@ -35,6 +36,8 @@ void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 m
 
 int main(int argc, char* argv[])
 {
+	CommandLineArgs::ProcessCommandLineArgs(argc, argv);
+
 	// Cool logo
 	std::cout << "  /\\/\\ (_)___ ___(_) | ___    /\\/\\   __ _  __| |_ __   ___  ___ ___ " << std::endl;
 	std::cout << " /    \\| / __/ __| | |/ _ \\  /    \\ / _` |/ _` | '_ \\ / _ \\/ __/ __|" << std::endl;
