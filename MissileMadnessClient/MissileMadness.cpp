@@ -36,7 +36,11 @@ void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 m
 
 int main(int argc, char* argv[])
 {
-	CommandLineArgs::ProcessCommandLineArgs(argc, argv);
+	if (!CommandLineArgs::ProcessCommandLineArgs(argc, argv))
+	{
+		Debug::LogError("Failed to read command line arguments!");
+		return 1;
+	}
 
 	// Cool logo
 	std::cout << "  /\\/\\ (_)___ ___(_) | ___    /\\/\\   __ _  __| |_ __   ___  ___ ___ " << std::endl;
@@ -51,7 +55,10 @@ int main(int argc, char* argv[])
 	std::getline(std::cin, name);
 	std::cout << std::endl;
 	
-	NetworkManagerClient::Instance().Initialize();
+	// Initialize network manager
+	if (!NetworkManagerClient::Instance().Initialize())
+		return 2;
+
 	NetworkManagerClient::Instance().InitUser(name);
 	NetworkManagerClient::Instance().RegisterCreationFunc('TOBJ', TestObj::CreateInstance);
 	NetworkManagerClient::Instance().RegisterCreationFunc('PLAY', ClientGame::CreatePlayer);

@@ -19,7 +19,7 @@ public:
 	ClientProjectile(const ClientProjectile&) = delete;
 	ClientProjectile& operator=(const ClientProjectile&) = delete;
 
-	void Update(float dataIntervall);
+	void Update();
 
 private:
 	ClientProjectile(UInt32 networkID);

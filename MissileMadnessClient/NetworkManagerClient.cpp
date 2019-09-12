@@ -12,13 +12,39 @@ NetworkManagerClient& NetworkManagerClient::Instance()
 	return instance;
 }
 
-void NetworkManagerClient::Initialize()
+bool NetworkManagerClient::Initialize()
 {
-	SocketUtil::StaticInit();
+	if (!SocketUtil::StaticInit())
+	{
+		Debug::LogError("Failed to initialize sockets!");
+		return false;
+	}
 
-	m_ServerAddress = SocketUtil::CreateSocketAress(SERVER_ADDRESS);
+	std::string address;
+	if (CommandLineArgs::UseCustomServerAddress())
+		address = CommandLineArgs::GetServerAddress();
+	else
+		address = SERVER_ADDRESS;
+
+	m_ServerAddress = SocketUtil::CreateSocketAress(address);
+	if (m_ServerAddress == nullptr)
+	{
+		Debug::LogErrorFormat("Couldn't create SocketAddress from %s. Shutting down!", address);
+		return false;
+	}
+
 	m_ClientSocket = SocketUtil::CreateUDPSocket(INET);
-	m_ClientSocket->SetNonBlockingMode(true);
+	if (m_ClientSocket == nullptr)
+	{
+		Debug::LogError("Failed to create socket for client! Shutting down!");
+		return false;
+	}
+
+	if (m_ClientSocket->SetNonBlockingMode(true) != 0)
+	{
+		Debug::LogError("Failed to set client socket to non blocking mode! Shutting down");
+		return false;
+	}
 
 	m_ClientState = ClientState::NOT_REGISTERED;
 
@@ -26,6 +52,8 @@ void NetworkManagerClient::Initialize()
 	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::UserDisconnedtRPC::k_RPCName, RPCUnwrap::UnwrapUserDisconnect);
 	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::DestroyNetworkedGameObject::k_RPCName, RPCUnwrap::UnwrapDestroyNetworkedGameObject);
 	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::SetNetworkedGameObjectActive::k_RPCName, RPCUnwrap::UnwrapSetNGOBJActive);
+
+	return true;
 }
 
 

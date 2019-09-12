@@ -18,7 +18,7 @@ public:
 
 	static NetworkManagerServer& Instance();
 
-	virtual void Initialize() override;
+	virtual bool Initialize() override;
 	virtual void ProcessIncomingPackets() override;
 
 	virtual void UpdateSendingPackets() override;

@@ -9,8 +9,8 @@
 #include "Move.h"
 #include "ExtraMath.h"
 
-constexpr auto SERVER_ADDRESS = "192.168.1.2:45000";
-//constexpr auto SERVER_ADDRESS = "127.0.0.1:45000";
+//constexpr auto SERVER_ADDRESS = "192.168.1.2:45000";
+constexpr auto SERVER_ADDRESS = "127.0.0.1:45000";
 
 class NetworkManagerClient : public NetworkManager
 {
@@ -19,7 +19,7 @@ public:
 	
 	static NetworkManagerClient& Instance();
 
-	virtual void Initialize() override;
+	virtual bool Initialize() override;
 	virtual void ProcessIncomingPackets() override;
 
 	virtual void UpdateSendingPackets() override;

@@ -28,8 +28,6 @@ void ClientProjectile::Read(InputMemoryBitStream& packet)
 		m_DebugPos->GetTransform()->SetPosition(pos);
 		m_DebugPos->GetTransform()->SetRotation(m_Transform.GetRotation());
 	}
-
-	//m_LastDataTime = Time::GetTime();
 }
 
 void ClientProjectile::Initialize(Texture2D* tex)
@@ -52,17 +50,8 @@ ClientProjectile::~ClientProjectile()
 		delete m_DebugPos;
 }
 
-void ClientProjectile::Update(float dataIntervall)
+void ClientProjectile::Update()
 {
-	//if (m_HasRecievedData)
-	//{
-	//	float timeSinceLastUpdate = Time::GetTime() - m_LastDataTime;
-	//	float t = timeSinceLastUpdate / dataIntervall;
-	//	if (t > 1.0f) t = 1.0f;
-
-	//	glm::vec3 pos = glm::mix(m_StartPos, m_InterpolatePos, t);
-	//	m_Transform.SetPosition(pos);
-	//}
 	Move(Time::deltaTime);
 }
 

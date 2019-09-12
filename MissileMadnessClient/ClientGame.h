@@ -21,8 +21,6 @@ public:
 	static void DisconnectPlayer(UInt32 userID);
 	static void RemoveProjectile(ClientProjectile*);
 
-	//static void SetDataIntervall(float intervall) { s_DataIntervall = intervall; }
-
 private:
 	// static bad :(
 	// TODO: Figure out better solution
@@ -31,8 +29,6 @@ private:
 
 	static std::vector<ClientPlayer*> s_Players;
 	static std::vector<ClientProjectile*> s_Projectiles;
-
-	//static float s_DataIntervall;
 
 	ExtraMath::AverageValue<float> m_AvgFrameTime;
 };

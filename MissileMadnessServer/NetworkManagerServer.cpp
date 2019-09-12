@@ -25,7 +25,7 @@ NetworkManagerServer& NetworkManagerServer::Instance()
 	return instance;
 }
 
-void NetworkManagerServer::Initialize()
+bool NetworkManagerServer::Initialize()
 {
 	SocketUtil::StaticInit();
 
@@ -37,6 +37,9 @@ void NetworkManagerServer::Initialize()
 	m_ServerSocket->SetNonBlockingMode(true);
 
 	m_ServerState = ServerState::WELCOMING_CLIENTS;
+
+	// TODO fix
+	return true;
 }
 
 void NetworkManagerServer::ProcessIncomingPackets()

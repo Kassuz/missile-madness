@@ -17,9 +17,6 @@ Texture2D* ClientGame::s_MissileTexture = nullptr;
 std::vector<ClientPlayer*> ClientGame::s_Players = std::vector<ClientPlayer*>();
 std::vector<ClientProjectile*> ClientGame::s_Projectiles = std::vector<ClientProjectile*>();
 
-
-//float ClientGame::s_DataIntervall = 0.0f;
-
 ClientGame::ClientGame() : m_AvgFrameTime(50)
 {
 	s_PlayerTexture  = ResourceManager::Instance().LoadTexture2D("Resources/Textures/Character.png");
@@ -36,21 +33,17 @@ void ClientGame::Update()
 	bool space = InputManager::Instance().GetKeyDown(GLFW_KEY_SPACE);
 
 	Move* m = new Move(right, left, up, down, space, Time::GetTime());
-	//Debug::LogFormat("Create move %u, time: %f", m->GetID(), m->GetTimestamp());
 	User::Me->AddNewMove(m);
-	//if (space)
-	//	Debug::LogWarningFormat("Move no: %u, player shoots!", m->GetID());
 
 	// Update all players
-	float interpolateIntervall = NetworkManagerClient::Instance().GetServerSendRate();
 	for (auto p : s_Players)
 	{
-		p->Update(interpolateIntervall);
+		p->Update();
 	}
 
 	// Update projectile interpolation
 	for (auto p : s_Projectiles)
-		p->Update(interpolateIntervall);
+		p->Update();
 
 	// Show stats
 	if (CommandLineArgs::ShouldShowStats())

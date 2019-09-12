@@ -26,7 +26,7 @@ public:
 
 	const int k_MaxPacketsPerFrame = 30;
 
-	virtual void Initialize() = 0;
+	virtual bool Initialize() = 0;
 	virtual void ProcessIncomingPackets() = 0;
 
 	virtual void UpdateSendingPackets() = 0;

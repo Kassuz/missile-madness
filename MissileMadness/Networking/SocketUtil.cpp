@@ -78,7 +78,7 @@ SocketAddressPtr SocketUtil::CreateSocketAress(const std::string& inString)
 		return nullptr;
 	}
 
-	auto toRet = std::make_shared< SocketAddress >(*result->ai_addr);
+	auto toRet = std::make_shared<SocketAddress>(*result->ai_addr);
 
 	freeaddrinfo(result);
 

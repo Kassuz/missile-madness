@@ -28,6 +28,7 @@ void Time::Update()
 	frameCount++;
 }
 
+// TODO: Maybe cache this at Time::Update
 float Time::GetTime()
 {
 	auto currentTime = std::chrono::high_resolution_clock::now();
