@@ -1,3 +1,9 @@
+//--------------------------------------------------------------------------------------------
+// Modified from examples at LearnOpenGL (learnopengl.com) by Joy de Vries https://twitter.com/JoeyDeVriez
+// https://learnopengl.com/code_viewer.php?code=in-practice/breakout/sprite_renderer
+// Licenced under CC BY-NC 4.0 https://creativecommons.org/licenses/by-nc/4.0/
+//--------------------------------------------------------------------------------------------
+
 #include "SpriteRenderer.h"
 
 #include <glad/glad.h>

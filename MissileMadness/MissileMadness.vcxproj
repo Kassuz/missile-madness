@@ -180,6 +180,7 @@
     <ClCompile Include="Networking\MemoryBitStream.cpp" />
     <ClCompile Include="Networking\RPCManager.cpp" />
     <ClCompile Include="Networking\SocketUtil.cpp" />
+    <ClCompile Include="Networking\TCPSocket.cpp" />
     <ClCompile Include="Networking\TestObj.cpp" />
     <ClCompile Include="Networking\UDPSocket.cpp" />
     <ClCompile Include="Networking\User.cpp" />

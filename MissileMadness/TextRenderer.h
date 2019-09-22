@@ -1,3 +1,9 @@
+//--------------------------------------------------------------------------------------------
+// Modified from examples at LearnOpenGL (learnopengl.com) by Joy de Vries https://twitter.com/JoeyDeVriez
+// https://learnopengl.com/code_viewer.php?code=in-practice/breakout/text_renderer.h
+// Licenced under CC BY-NC 4.0 https://creativecommons.org/licenses/by-nc/4.0/
+//--------------------------------------------------------------------------------------------
+
 #pragma once
 
 #include <map>
@@ -11,10 +17,10 @@
 /// Holds all state information relevant to a character as loaded using FreeType
 struct Character 
 {
-	UInt32 TextureID;   // ID handle of the glyph texture
-	glm::ivec2 Size;    // Size of glyph
-	glm::ivec2 Bearing; // Offset from baseline to left/top of glyph
-	UInt32 Advance;     // Horizontal offset to advance to next glyph
+	UInt32 m_TextureID;   // ID handle of the glyph texture
+	glm::ivec2 m_Size;    // Size of glyph
+	glm::ivec2 m_Bearing; // Offset from baseline to left/top of glyph
+	UInt32 m_Advance;     // Horizontal offset to advance to next glyph
 };
 
 
@@ -27,7 +33,7 @@ public:
 	static TextRenderer& Instance();
 
 	// Holds a list of pre-compiled Characters
-	std::map<char, Character> Characters;
+	std::map<char, Character> m_Characters;
 	
 	void Init(UInt32 width, UInt32 height);
 	// Pre-compiles a list of characters from the given font
@@ -39,8 +45,8 @@ public:
 
 private:
 	// Render state
-	GLuint VAO, VBO;
-	Shader* textShader;
+	UInt32 m_VAO, m_VBO;
+	Shader* m_TextShader;
 
 	TextRenderer() {};
 	TextRenderer(const TextRenderer& other) = delete;
@@ -48,16 +54,16 @@ private:
 
 	struct RenderTextObj
 	{
-		std::string text;
-		Color textColor;
-		float x, y, scale;
-		float activeTime;
-		float activeTimer = 0.0f;
+		std::string m_Text;
+		Color m_TextColor;
+		float m_X, m_Y, m_Scale;
+		float m_ActiveTime;
+		float m_ActiveTimer = 0.0f;
 
-		RenderTextObj* next = nullptr, * previous = nullptr;
+		RenderTextObj* m_Next = nullptr, * m_Previous = nullptr;
 	};
 
-	RenderTextObj* renderHead;
+	RenderTextObj* m_RenderHead;
 
-	UInt32 screenHeight = 0U, screenWidth = 0U;
+	UInt32 m_ScreenHeight = 0U, m_ScreenWidth = 0U;
 };

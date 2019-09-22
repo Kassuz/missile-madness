@@ -4,7 +4,7 @@
 
 
 Sprite::Sprite(Texture2D* texture, Color color, GameObject* gameObject, Int32 renderLayer) 
-	: texture(texture), spriteColor(color), gameObject(gameObject), renderLayer(renderLayer)
+	: m_Texture(texture), m_SpriteColor(color), m_GameObject(gameObject), m_RenderLayer(renderLayer)
 {
 	SpriteRenderer::Instance().RegisterSprite(this);
 }

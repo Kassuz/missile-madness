@@ -1,3 +1,9 @@
+//--------------------------------------------------------------------------------------------
+// LoadShaderFromFile & LoadTexture2DFormFile are
+// Modified from examples at LearnOpenGL (learnopengl.com) by Joy de Vries https://twitter.com/JoeyDeVriez
+// Licenced under CC BY-NC 4.0 https://creativecommons.org/licenses/by-nc/4.0/
+//--------------------------------------------------------------------------------------------
+
 #include "ResourceManager.h"
 
 #include <fstream>
@@ -20,23 +26,23 @@ ResourceManager& ResourceManager::Instance()
 
 Shader* ResourceManager::LoadShader(const std::string& name)
 {
-	auto shader = shaders.find(name);
-	if (shader != shaders.end())
+	auto shader = m_Shaders.find(name);
+	if (shader != m_Shaders.end())
 		return shader->second;
 
 	Shader* s = LoadShaderFromFile("Resources/Shaders/" + name + ".vert", "Resources/Shaders/" + name + ".frag");
-	shaders.emplace(name, s);
+	m_Shaders.emplace(name, s);
 	return s;
 }
 
 Texture2D* ResourceManager::LoadTexture2D(const std::string& path)
 {
-	auto tex = textures.find(path);
-	if (tex != textures.end())
+	auto tex = m_Textures.find(path);
+	if (tex != m_Textures.end())
 		return tex->second;
 
 	Texture2D* t = LoadTexture2DFromFile(path);
-	textures.emplace(path, t);
+	m_Textures.emplace(path, t);
 	return t;
 }
 
@@ -47,12 +53,12 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
-	for (auto it : shaders)
+	for (auto it : m_Shaders)
 	{
 		delete it.second;
 	}
 
-	for (auto it : textures)
+	for (auto it : m_Textures)
 	{
 		delete it.second;
 	}

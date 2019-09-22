@@ -104,6 +104,9 @@
     <ClCompile Include="Networking\RPCManager.cpp">
       <Filter>_Networking\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Networking\TCPSocket.cpp">
+      <Filter>_Networking\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">

@@ -1,3 +1,9 @@
+//--------------------------------------------------------------------------------------------
+// Modified from examples at LearnOpenGL (learnopengl.com) by Joy de Vries https://twitter.com/JoeyDeVriez
+// https://learnopengl.com/code_viewer.php?code=in-practice/breakout/text_renderer
+// Licenced under CC BY-NC 4.0 https://creativecommons.org/licenses/by-nc/4.0/
+//--------------------------------------------------------------------------------------------
+
 #include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,19 +14,19 @@
 
 void TextRenderer::Init(UInt32 width, UInt32 height)
 {
-	screenWidth  = width;
-	screenHeight = height;
+	m_ScreenWidth  = width;
+	m_ScreenHeight = height;
 
 	// Load and configure shader
-	this->textShader = ResourceManager::Instance().LoadShader("Text");
-	this->textShader->Use();
-	this->textShader->SetMat4("projection", glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f));
-	this->textShader->SetInt("text", 0);
+	this->m_TextShader = ResourceManager::Instance().LoadShader("Text");
+	this->m_TextShader->Use();
+	this->m_TextShader->SetMat4("projection", glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f));
+	this->m_TextShader->SetInt("text", 0);
 	// Configure VAO/VBO for texture quads
-	glGenVertexArrays(1, &this->VAO);
-	glGenBuffers(1, &this->VBO);
-	glBindVertexArray(this->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+	glGenVertexArrays(1, &this->m_VAO);
+	glGenBuffers(1, &this->m_VBO);
+	glBindVertexArray(this->m_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->m_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
@@ -37,7 +43,7 @@ TextRenderer& TextRenderer::Instance()
 void TextRenderer::Load(std::string font, UInt32 fontSize)
 {
 	// First clear the previously loaded Characters
-	this->Characters.clear();
+	this->m_Characters.clear();
 	// Then initialize and load the FreeType library
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft)) // All functions return a value different than 0 whenever an error occurred
@@ -77,7 +83,7 @@ void TextRenderer::Load(std::string font, UInt32 fontSize)
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
 			face->glyph->advance.x
 		};
-		Characters.insert(std::pair<char, Character>(c, character));
+		m_Characters.insert(std::pair<char, Character>(c, character));
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	// Destroy FreeType once we're finished
@@ -88,52 +94,52 @@ void TextRenderer::Load(std::string font, UInt32 fontSize)
 void TextRenderer::RenderText(std::string text, float x, float y, float scale, float activeTime, Color color)
 {
 	RenderTextObj* textToRender = new RenderTextObj();
-	textToRender->text = text;
-	textToRender->x = x;
-	textToRender->y = y;
-	textToRender->scale = scale;
-	textToRender->activeTime = activeTime;
-	textToRender->textColor = color;
+	textToRender->m_Text = text;
+	textToRender->m_X = x;
+	textToRender->m_Y = y;
+	textToRender->m_Scale = scale;
+	textToRender->m_ActiveTime = activeTime;
+	textToRender->m_TextColor = color;
 
-	textToRender->next = renderHead;
-	if (renderHead != nullptr) renderHead->previous = textToRender;
-	renderHead = textToRender;
+	textToRender->m_Next = m_RenderHead;
+	if (m_RenderHead != nullptr) m_RenderHead->m_Previous = textToRender;
+	m_RenderHead = textToRender;
 }
 
 void TextRenderer::RenderTextWorldSpace(std::string text, float x, float y, float scale, float activeTime, Color color)
 {
-	float newX = x + (screenWidth  / 2.0f);
-	float newY = y - (screenHeight / 2.0f);
+	float newX = x + (m_ScreenWidth  / 2.0f);
+	float newY = y - (m_ScreenHeight / 2.0f);
 	if (newY < 0.0f) newY *= -1.0f;
 	RenderText(text, newX, newY, scale, activeTime, color);
 }
 
 void TextRenderer::RenderAllText()
 {
-	this->textShader->Use();
+	this->m_TextShader->Use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindVertexArray(this->VAO);
+	glBindVertexArray(this->m_VAO);
 
-	RenderTextObj* cur = renderHead;
+	RenderTextObj* cur = m_RenderHead;
 	while (cur != nullptr)
 	{
-		this->textShader->SetVec3("textColor", cur->textColor);
+		this->m_TextShader->SetVec3("textColor", cur->m_TextColor);
 
-		float x = cur->x;
-		float y = cur->y;
-		float scale = cur->scale;
+		float x = cur->m_X;
+		float y = cur->m_Y;
+		float scale = cur->m_Scale;
 
 		// Iterate through all characters
 		std::string::const_iterator c;
-		for (c = cur->text.begin(); c != cur->text.end(); c++)
+		for (c = cur->m_Text.begin(); c != cur->m_Text.end(); c++)
 		{
-			Character ch = Characters[*c];
+			Character ch = m_Characters[*c];
 
-			float xpos = x + ch.Bearing.x * scale;
-			float ypos = y + (this->Characters['H'].Bearing.y - ch.Bearing.y) * scale;
+			float xpos = x + ch.m_Bearing.x * scale;
+			float ypos = y + (this->m_Characters['H'].m_Bearing.y - ch.m_Bearing.y) * scale;
 
-			float w = ch.Size.x * scale;
-			float h = ch.Size.y * scale;
+			float w = ch.m_Size.x * scale;
+			float h = ch.m_Size.y * scale;
 			// Update VBO for each character
 			float vertices[6][4] = {
 				{ xpos,     ypos + h,   0.0, 1.0 },
@@ -145,31 +151,31 @@ void TextRenderer::RenderAllText()
 				{ xpos + w, ypos,       1.0, 0.0 }
 			};
 			// Render glyph texture over quad
-			glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+			glBindTexture(GL_TEXTURE_2D, ch.m_TextureID);
 			// Update content of VBO memory
-			glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+			glBindBuffer(GL_ARRAY_BUFFER, this->m_VBO);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			// Render quad
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			// Now advance cursors for next glyph
-			x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (1/64th times 2^6 = 64)
+			x += (ch.m_Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (1/64th times 2^6 = 64)
 		}
 
-		cur->activeTimer += Time::deltaTime;
-		if (cur->activeTimer >= cur->activeTime)
+		cur->m_ActiveTimer += Time::deltaTime;
+		if (cur->m_ActiveTimer >= cur->m_ActiveTime)
 		{
-			if (cur->previous != nullptr) cur->previous->next = cur->next;
-			if (cur->next != nullptr) cur->next->previous = cur->previous;
-			if (renderHead == cur) renderHead = cur->next;
+			if (cur->m_Previous != nullptr) cur->m_Previous->m_Next = cur->m_Next;
+			if (cur->m_Next != nullptr) cur->m_Next->m_Previous = cur->m_Previous;
+			if (m_RenderHead == cur) m_RenderHead = cur->m_Next;
 			RenderTextObj* temp = cur;
-			cur = cur->next;
+			cur = cur->m_Next;
 			delete temp;
 		}
 		else
 		{
-			cur = cur->next;
+			cur = cur->m_Next;
 		}
 	}
 

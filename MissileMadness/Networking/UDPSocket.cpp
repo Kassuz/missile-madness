@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+//	Adapted from book Multiplayer Game Programming 
+//	by Joshua Glazer and Sanjay Madhav
+//---------------------------------------------------------
+
 #include "Sockets.h"
 #include <iostream>
 
@@ -5,12 +10,12 @@
 
 UDPSocket::~UDPSocket()
 {
-	closesocket(mSocket);
+	closesocket(m_Socket);
 }
 
-int UDPSocket::Bind(const SocketAddress& inBindAddress)
+Int32 UDPSocket::Bind(const SocketAddress& inBindAddress)
 {
-	int err = bind(mSocket, &inBindAddress.mSockAddr,
+	Int32 err = bind(m_Socket, &inBindAddress.m_SockAddr,
 		inBindAddress.GetSize());
 	if (err != 0)
 	{
@@ -20,9 +25,9 @@ int UDPSocket::Bind(const SocketAddress& inBindAddress)
 	return NO_ERROR;
 }
 
-int UDPSocket::SendTo(const void* inData, int inLen, const SocketAddress& inTo)
+Int32 UDPSocket::SendTo(const void* inData, Int32 inLen, const SocketAddress& inTo)
 {
-	int byteSentCount = sendto(mSocket,	static_cast<const char*>(inData), inLen, 0, &inTo.mSockAddr, inTo.GetSize());
+	Int32 byteSentCount = sendto(m_Socket, static_cast<const char*>(inData), inLen, 0, &inTo.m_SockAddr, inTo.GetSize());
 	if (byteSentCount <= 0)
 	{
 		//we'll return error as negative number to indicate less than requested amount of bytes sent...
@@ -35,18 +40,18 @@ int UDPSocket::SendTo(const void* inData, int inLen, const SocketAddress& inTo)
 	}
 }
 
-int UDPSocket::ReceiveFrom(void* inBuffer, int inLen, SocketAddress& outFrom)
+Int32 UDPSocket::ReceiveFrom(void* inBuffer, Int32 inLen, SocketAddress& outFrom)
 {
 	socklen_t fromLength = outFrom.GetSize();
 
-	int readByteCount = recvfrom(mSocket, static_cast<char*>(inBuffer), inLen, 0, &outFrom.mSockAddr, &fromLength);
+	Int32 readByteCount = recvfrom(m_Socket, static_cast<char*>(inBuffer), inLen, 0, &outFrom.m_SockAddr, &fromLength);
 	if (readByteCount >= 0)
 	{
 		return readByteCount;
 	}
 	else
 	{
-		int error = SocketUtil::GetLastError();
+		Int32 error = SocketUtil::GetLastError();
 
 		if (error == WSAEWOULDBLOCK)
 		{
@@ -67,10 +72,10 @@ int UDPSocket::ReceiveFrom(void* inBuffer, int inLen, SocketAddress& outFrom)
 	}
 }
 
-int UDPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
+Int32 UDPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking)
 {
 	u_long arg = inShouldBeNonBlocking ? 1 : 0;
-	int result = ioctlsocket(mSocket, FIONBIO, &arg);
+	Int32 result = ioctlsocket(m_Socket, FIONBIO, &arg);
 
 	if (result == SOCKET_ERROR)
 	{

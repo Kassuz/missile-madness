@@ -21,8 +21,8 @@ private:
 	ResourceManager(const ResourceManager& other) = delete;
 	ResourceManager& operator=(const ResourceManager& other) = delete;
 
-	std::map<std::string, Shader*> shaders;
-	std::map<std::string, Texture2D*> textures;
+	std::map<std::string, Shader*> m_Shaders;
+	std::map<std::string, Texture2D*> m_Textures;
 
 	Shader* LoadShaderFromFile(const std::string& vertex, const std::string& fragment);
 	Texture2D* LoadTexture2DFromFile(const std::string& path);

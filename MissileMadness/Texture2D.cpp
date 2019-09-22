@@ -1,25 +1,31 @@
+//--------------------------------------------------------------------------------------------
+// Modified from examples at LearnOpenGL (learnopengl.com) by Joy de Vries https://twitter.com/JoeyDeVriez
+// https://learnopengl.com/code_viewer.php?code=in-practice/breakout/texture
+// Licenced under CC BY-NC 4.0 https://creativecommons.org/licenses/by-nc/4.0/
+//--------------------------------------------------------------------------------------------
+
 #include "Texture2D.h"
 
 #include <glad/glad.h>
 
 
-Texture2D::Texture2D() : width(0), height(0)
+Texture2D::Texture2D() : m_Width(0), m_Height(0)
 {
-	glGenTextures(1, &this->ID);
+	glGenTextures(1, &this->m_ID);
 }
 
 
 Texture2D::~Texture2D()
 {
-	glDeleteTextures(1, &this->ID);
+	glDeleteTextures(1, &this->m_ID);
 }
 
 void Texture2D::Generate(UInt32 width, UInt32 height, UInt8* data)
 {
-	this->width  = width;
-	this->height = height;
+	this->m_Width  = width;
+	this->m_Height = height;
 
-	glBindTexture(GL_TEXTURE_2D, this->ID);
+	glBindTexture(GL_TEXTURE_2D, this->m_ID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -32,5 +38,5 @@ void Texture2D::Generate(UInt32 width, UInt32 height, UInt8* data)
 
 void Texture2D::Use()
 {
-	glBindTexture(GL_TEXTURE_2D, this->ID);
+	glBindTexture(GL_TEXTURE_2D, this->m_ID);
 }

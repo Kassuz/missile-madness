@@ -39,8 +39,8 @@ private:
 	InputManager(const InputManager&) = delete;
 	InputManager& operator=(const InputManager&) = delete;
 
-	KeyState keys[1024];
-	float mouseX, mouseY;
+	KeyState m_Keys[1024];
+	float m_MouseX, m_MouseY;
 
-	KeyState mouseRight, mouseLeft, mouseMiddle;
+	KeyState m_MouseRight, m_MouseLeft, m_MouseMiddle;
 };

@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+//	Adapted from book Multiplayer Game Programming 
+//	by Joshua Glazer and Sanjay Madhav
+//---------------------------------------------------------
+
 #include "MemoryBitStream.h"
 
 #include <algorithm>
@@ -5,22 +10,22 @@
 
 void OutputMemoryBitStream::WriteBits(Byte inData, UInt32 inBitCount)
 {
-	UInt32 nextBitHead = mBitHead + static_cast<UInt32>(inBitCount);
+	UInt32 nextBitHead = m_BitHead + static_cast<UInt32>(inBitCount);
 
-	if (nextBitHead > mBitCapacity)
+	if (nextBitHead > m_BitCapacity)
 	{
-		ReallocBuffer(std::max(mBitCapacity * 2, nextBitHead));
+		ReallocBuffer(std::max(m_BitCapacity * 2, nextBitHead));
 	}
 	// Bitwise black magic
 
 	//calculate the byteOffset into our buffer
 	//by dividing the head by 8
 	//and the bitOffset by taking the last 3 bits
-	UInt32 byteOffset = mBitHead >> 3;
-	UInt32 bitOffset = mBitHead & 0x7;
+	UInt32 byteOffset = m_BitHead >> 3;
+	UInt32 bitOffset = m_BitHead & 0x7;
 
 	UInt8 currentMask = ~(0xff << bitOffset);
-	mBuffer[byteOffset] = (mBuffer[byteOffset] & currentMask) | (inData << bitOffset);
+	m_Buffer[byteOffset] = (m_Buffer[byteOffset] & currentMask) | (inData << bitOffset);
 
 	//calculate how many bits were not yet used in
 	//our target byte in the buffer
@@ -30,10 +35,10 @@ void OutputMemoryBitStream::WriteBits(Byte inData, UInt32 inBitCount)
 	if (bitsFreeThisByte < inBitCount)
 	{
 		//we need another byte
-		mBuffer[byteOffset + 1] = inData >> bitsFreeThisByte;
+		m_Buffer[byteOffset + 1] = inData >> bitsFreeThisByte;
 	}
 
-	mBitHead = nextBitHead;
+	m_BitHead = nextBitHead;
 }
 
 void OutputMemoryBitStream::WriteBits(const void* inData, UInt32 inBitCount)
@@ -73,25 +78,25 @@ void OutputMemoryBitStream::Write(const glm::quat& inQuat)
 
 void OutputMemoryBitStream::ReallocBuffer(UInt32 inNewBitLength)
 {
-	if (mBuffer == nullptr)
+	if (m_Buffer == nullptr)
 	{
 		//just need to memset on first allocation
-		mBuffer = static_cast<Byte*>(std::malloc(inNewBitLength >> 3));
-		memset(mBuffer, 0, inNewBitLength >> 3);
+		m_Buffer = static_cast<Byte*>(std::malloc(inNewBitLength >> 3));
+		memset(m_Buffer, 0, inNewBitLength >> 3);
 	}
 	else
 	{
 		//need to memset, then copy the buffer
 		Byte* tempBuffer = static_cast<Byte*>(std::malloc(inNewBitLength >> 3));
 		memset(tempBuffer, 0, inNewBitLength >> 3);
-		memcpy(tempBuffer, mBuffer, mBitCapacity >> 3);
-		std::free(mBuffer);
-		mBuffer = tempBuffer;
+		memcpy(tempBuffer, m_Buffer, m_BitCapacity >> 3);
+		std::free(m_Buffer);
+		m_Buffer = tempBuffer;
 	}
 
 	//handle realloc failure
 	//...
-	mBitCapacity = inNewBitLength;
+	m_BitCapacity = inNewBitLength;
 }
 
 void OutputMemoryBitStream::HexDump() const
@@ -100,7 +105,7 @@ void OutputMemoryBitStream::HexDump() const
 	printf("Buffer len: %i\n", bufferSize);
 	for (int i = 0; i < bufferSize; ++i)
 	{
-		printf("%02hhX ", mBuffer[i]);
+		printf("%02hhX ", m_Buffer[i]);
 	}
 	printf("\n");
 }
@@ -111,22 +116,22 @@ void InputMemoryBitStream::ReadBitsImpl(Byte& outData, UInt32 inBitCount)
 {
 	// Bitwise black magic
 
-	UInt32 byteOffset = mBitHead >> 3;
-	UInt32 bitOffset = mBitHead & 0x7;
+	UInt32 byteOffset = m_BitHead >> 3;
+	UInt32 bitOffset = m_BitHead & 0x7;
 
-	outData = static_cast<UInt8>(mBuffer[byteOffset]) >> bitOffset;
+	outData = static_cast<UInt8>(m_Buffer[byteOffset]) >> bitOffset;
 
 	UInt32 bitsFreeThisByte = 8 - bitOffset;
 	if (bitsFreeThisByte < inBitCount)
 	{
 		//we need another byte
-		outData |= static_cast<UInt8>(mBuffer[byteOffset + 1]) << bitsFreeThisByte;
+		outData |= static_cast<UInt8>(m_Buffer[byteOffset + 1]) << bitsFreeThisByte;
 	}
 
 	//don't forget a mask so that we only read the bit we wanted...
 	outData &= (~(0x00ff << inBitCount));
 
-	mBitHead += inBitCount;
+	m_BitHead += inBitCount;
 }
 
 void InputMemoryBitStream::ReadBits(void* outData, UInt32 inBitCount)
@@ -180,11 +185,11 @@ void InputMemoryBitStream::Read(glm::quat& outQuat)
 
 void InputMemoryBitStream::HexDump() const
 {
-	UInt32 bufferSize = mBitCapacity >> 3;
+	UInt32 bufferSize = m_BitCapacity >> 3;
 	printf("Buffer len: %i\n", bufferSize);
 	for (int i = 0; i < bufferSize; ++i)
 	{
-		printf("%02hhX ", mBuffer[i]);
+		printf("%02hhX ", m_Buffer[i]);
 	}
 	printf("\n");
 }

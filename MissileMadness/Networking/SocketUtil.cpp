@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+//	Adapted from book Multiplayer Game Programming 
+//	by Joshua Glazer and Sanjay Madhav
+//---------------------------------------------------------
+
 #include "Sockets.h"
 
 #include "../Debug.h"
@@ -37,6 +42,21 @@ UDPSocketPtr SocketUtil::CreateUDPSocket(SocketAddressFamily inFamily)
 	else
 	{
 		ReportError("SocketUtil::CreateUDPSocket");
+		return nullptr;
+	}
+}
+
+TCPSocketPtr SocketUtil::CreateTCPSocket(SocketAddressFamily inFamily)
+{
+	SOCKET s = socket(inFamily, SOCK_STREAM, IPPROTO_TCP);
+
+	if (s != INVALID_SOCKET)
+	{
+		return TCPSocketPtr(new TCPSocket(s));
+	}
+	else
+	{
+		ReportError("SocketUtil::CreateTCPSocket");
 		return nullptr;
 	}
 }

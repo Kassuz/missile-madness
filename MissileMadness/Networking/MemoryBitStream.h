@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+//	Adapted from book Multiplayer Game Programming 
+//	by Joshua Glazer and Sanjay Madhav
+//---------------------------------------------------------
+
 #pragma once
 
 #include <cstdlib>
@@ -42,29 +47,29 @@ class OutputMemoryBitStream
 {
 public:
 
-	OutputMemoryBitStream() : mBitHead(0), mBuffer(nullptr)
+	OutputMemoryBitStream() : m_BitHead(0), m_Buffer(nullptr)
 	{
 		ReallocBuffer(1500 * 8);
 	}
 
 	OutputMemoryBitStream(const OutputMemoryBitStream& other)
 	{
-		mBuffer = nullptr;
+		m_Buffer = nullptr;
 		ReallocBuffer(1500 * 8);
-		memcpy(mBuffer, other.mBuffer, other.GetByteLength());
+		memcpy(m_Buffer, other.m_Buffer, other.GetByteLength());
 
-		mBitHead = other.mBitHead;
-		mBitCapacity = other.mBitCapacity;
+		m_BitHead = other.m_BitHead;
+		m_BitCapacity = other.m_BitCapacity;
 	}
 
-	~OutputMemoryBitStream() { std::free(mBuffer); }
+	~OutputMemoryBitStream() { std::free(m_Buffer); }
 
 	void WriteBits(Byte inData, UInt32 inBitCount);
 	void WriteBits(const void* inData, UInt32 inBitCount);
 
-	const Byte* GetBufferPtr() const { return mBuffer; }
-	UInt32 GetBitLength() const { return mBitHead; }
-	UInt32 GetByteLength() const { return (mBitHead + 7) >> 3; }
+	const Byte* GetBufferPtr() const { return m_Buffer; }
+	UInt32 GetBitLength() const { return m_BitHead; }
+	UInt32 GetByteLength() const { return (m_BitHead + 7) >> 3; }
 
 	void WriteBytes(const void* inData, UInt32 inByteCount) { WriteBits(inData, inByteCount << 3); }
 
@@ -95,9 +100,9 @@ public:
 private:
 	void ReallocBuffer(UInt32 inNewBitCapacity);
 
-	Byte* mBuffer;
-	UInt32 mBitHead;
-	UInt32 mBitCapacity;
+	Byte* m_Buffer;
+	UInt32 m_BitHead;
+	UInt32 m_BitCapacity;
 };
 
 class InputMemoryBitStream
@@ -105,27 +110,27 @@ class InputMemoryBitStream
 public:
 
 	InputMemoryBitStream(Byte* inBuffer, UInt32 inBitCount) :
-		mBuffer(inBuffer),
-		mBitCapacity(inBitCount),
-		mBitHead(0),
-		mIsBufferOwner(false) {}
+		m_Buffer(inBuffer),
+		m_BitCapacity(inBitCount),
+		m_BitHead(0),
+		m_IsBufferOwner(false) {}
 
 	InputMemoryBitStream(const InputMemoryBitStream& inOther) :
-		mBitCapacity(inOther.mBitCapacity),
-		mBitHead(inOther.mBitHead),
-		mIsBufferOwner(true)
+		m_BitCapacity(inOther.m_BitCapacity),
+		m_BitHead(inOther.m_BitHead),
+		m_IsBufferOwner(true)
 	{
 		//allocate buffer of right size
-		int byteCount = mBitCapacity / 8;
-		mBuffer = static_cast<Byte*>(malloc(byteCount));
+		int byteCount = m_BitCapacity / 8;
+		m_Buffer = static_cast<Byte*>(malloc(byteCount));
 		//copy
-		memcpy(mBuffer, inOther.mBuffer, byteCount);
+		memcpy(m_Buffer, inOther.m_Buffer, byteCount);
 	}
 
-	~InputMemoryBitStream() { if (mIsBufferOwner) { free(mBuffer); } }
+	~InputMemoryBitStream() { if (m_IsBufferOwner) { free(m_Buffer); } }
 
-	const Byte* GetBufferPtr() const { return mBuffer; }
-	UInt32 GetRemainingBitCount() const { return mBitCapacity - mBitHead; }
+	const Byte* GetBufferPtr() const { return m_Buffer; }
+	UInt32 GetRemainingBitCount() const { return m_BitCapacity - m_BitHead; }
 
 	void ReadBits(void* outData, UInt32 inBitCount);
 
@@ -144,7 +149,7 @@ public:
 	void Read(glm::quat& outQuat);
 	void Read(glm::vec3& inVector);
 
-	void ResetToCapacity(UInt32 inByteCapacity) { mBitCapacity = inByteCapacity << 3; mBitHead = 0; }
+	void ResetToCapacity(UInt32 inByteCapacity) { m_BitCapacity = inByteCapacity << 3; m_BitHead = 0; }
 
 	void Read(std::string& inString)
 	{
@@ -160,14 +165,14 @@ public:
 	void HexDump() const;
 	void PrintStats() const 
 	{
-		printf("Stats for buffer:\n\tReadHead: %u\n\tBitCapasity: %u\n", mBitHead, mBitCapacity);
+		printf("Stats for buffer:\n\tReadHead: %u\n\tBitCapasity: %u\n", m_BitHead, m_BitCapacity);
 	}
 
 private:
-	Byte* mBuffer;
-	UInt32 mBitHead;
-	UInt32 mBitCapacity;
-	bool mIsBufferOwner;
+	Byte* m_Buffer;
+	UInt32 m_BitHead;
+	UInt32 m_BitCapacity;
+	bool m_IsBufferOwner;
 
 	void ReadBitsImpl(Byte& outData, UInt32 inBitCount);
 };
