@@ -9,13 +9,15 @@
 
 #include <unordered_map>
 
-constexpr UInt16 SERVER_PORT = 45000;
+constexpr UInt16 SERVER_PORT_UDP = 45000;
 
 class NetworkManagerServer : public NetworkManager
 {
 public:
 	enum class ServerState { NOT_INITIALIZED, WELCOMING_CLIENTS, STARTING, SIMULATING };
 
+	virtual ~NetworkManagerServer();
+	
 	static NetworkManagerServer& Instance();
 
 	virtual bool Initialize() override;
@@ -45,9 +47,9 @@ public:
 
 	RPCManagerServer& RPC() { return m_RPCManager; }
 
+
 protected:
 	NetworkManagerServer();
-	virtual ~NetworkManagerServer();
 
 private:
 	const UInt32 k_MaxUsers = 2U;
@@ -75,7 +77,7 @@ private:
 	void SendGameStartPacket();
 	void SendWorldState();
 
-	void SendPacketToAllClients(OutputMemoryBitStream& packet, PacketType packetType);
+	void SendPacketToAllClients(OutputMemoryBitStream& packet, GameplayPacketType packetType);
 
 	void WriteACKs(OutputMemoryBitStream& packet, User* user);
 

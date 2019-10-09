@@ -41,7 +41,6 @@ public:
 	// Renders a string of text using the precompiled list of characters
 	void RenderText(std::string text, float x, float y, float scale, float activeTime = 0.0f, Color color = Color::Black());
 	void RenderTextWorldSpace(std::string text, float x, float y, float scale, float activeTime = 0.0f, Color color = Color::Black());
-	void RenderAllText();
 
 private:
 	// Render state
@@ -51,6 +50,9 @@ private:
 	TextRenderer() {};
 	TextRenderer(const TextRenderer& other) = delete;
 	TextRenderer& operator=(const TextRenderer& other) = delete;
+
+	// Should only be called from render engine
+	void RenderAllText();
 
 	struct RenderTextObj
 	{
@@ -66,4 +68,6 @@ private:
 	RenderTextObj* m_RenderHead;
 
 	UInt32 m_ScreenHeight = 0U, m_ScreenWidth = 0U;
+
+	friend class RenderingEngine;
 };

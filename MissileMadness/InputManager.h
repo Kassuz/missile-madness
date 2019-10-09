@@ -9,38 +9,39 @@ class InputManager
 {
 public:
 
-	enum class KeyState { KEY_UP, KEY_PRESSED, KEY_HELD, KEY_RELEASED }; //  if more is needed, remember to modify Move-class
+	enum class KeyState { KEY_UP, KEY_PRESSED, KEY_HELD, KEY_RELEASED }; 
 
-	static InputManager& Instance();
+	//static InputManager& Instance();
+	static void Init();
 
-	void KeyCallback(GLFWwindow* window, Int32 key, Int32 scancode, Int32 action, Int32 mods);
-	void MouseCallback(GLFWwindow* window, double xpos, double ypos);
-	void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 mods);
+	static void KeyCallback(GLFWwindow* window, Int32 key, Int32 scancode, Int32 action, Int32 mods);
+	static void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+	static void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 mods);
 
-	void Update();
+	static void Update();
 
-	bool GetKey(Int32 key);
-	bool GetKeyDown(Int32 key);
-	bool GetKeyReleased(Int32 key);
+	static bool GetKey(Int32 key);
+	static bool GetKeyDown(Int32 key);
+	static bool GetKeyReleased(Int32 key);
 
-	bool GetMouseButton(Int32 button);
-	bool GetMouseButtonDown(Int32 button);
-	bool GetMouseButtonReleased(Int32 button);
+	static bool GetMouseButton(Int32 button);
+	static bool GetMouseButtonDown(Int32 button);
+	static bool GetMouseButtonReleased(Int32 button);
 
-	KeyState GetKeyState(Int32 key);
-	KeyState GetMouseState(Int32 button);
+	static KeyState GetKeyState(Int32 key);
+	static KeyState GetMouseState(Int32 button);
 
+	static glm::vec2 GetMousePos();
 
-	glm::vec2 GetMousePos();
-
-private:
-	InputManager();
+	InputManager() = delete;
 	~InputManager();
 	InputManager(const InputManager&) = delete;
 	InputManager& operator=(const InputManager&) = delete;
 
-	KeyState m_Keys[1024];
-	float m_MouseX, m_MouseY;
+private:
 
-	KeyState m_MouseRight, m_MouseLeft, m_MouseMiddle;
+	static KeyState s_Keys[];
+	static float s_MouseX, s_MouseY;
+
+	static KeyState s_MouseRight, s_MouseLeft, s_MouseMiddle;
 };

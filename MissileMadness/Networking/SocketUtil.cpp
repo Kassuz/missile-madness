@@ -7,8 +7,16 @@
 
 #include "../Debug.h"
 
+bool SocketUtil::s_HasInit = false;
+
 bool SocketUtil::StaticInit()
 {
+	if (s_HasInit)
+	{
+		Debug::LogError("WSAStartup already called!");
+		return true;
+	}
+
 	WSADATA wsaData;
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != NO_ERROR)
@@ -17,18 +25,24 @@ bool SocketUtil::StaticInit()
 		return false;
 	}
 
+	s_HasInit = true;
+
 	return true;
 }
 
 void SocketUtil::CleanUp()
 {
-	WSACleanup();
+	if (s_HasInit)
+		WSACleanup();
+	else
+		Debug::LogError("Tried to clean up, but Winsock was never started!");
 }
 
 void SocketUtil::ReportError(const char* inOperationDesc)
 {
 	int errorNum = GetLastError();
-	Debug::LogErrorFormat("Error %s: %d", inOperationDesc, errorNum);
+	if (errorNum != WSAEWOULDBLOCK) // <- Non error, should not report
+		Debug::LogErrorFormat("Error %s: %d", inOperationDesc, errorNum);
 }
 
 UDPSocketPtr SocketUtil::CreateUDPSocket(SocketAddressFamily inFamily)
@@ -61,7 +75,7 @@ TCPSocketPtr SocketUtil::CreateTCPSocket(SocketAddressFamily inFamily)
 	}
 }
 
-SocketAddressPtr SocketUtil::CreateSocketAress(const std::string& inString)
+SocketAddressPtr SocketUtil::CreateSocketAddress(const std::string& inString)
 {
 	auto pos = inString.find_last_of(':');
 	std::string host, service;

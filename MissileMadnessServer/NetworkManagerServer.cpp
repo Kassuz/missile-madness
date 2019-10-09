@@ -31,7 +31,7 @@ bool NetworkManagerServer::Initialize()
 
 	m_ServerSocket = SocketUtil::CreateUDPSocket(INET);
 
-	SocketAddress serverAddress(INADDR_ANY, SERVER_PORT);
+	SocketAddress serverAddress(INADDR_ANY, SERVER_PORT_UDP);
 
 	m_ServerSocket->Bind(serverAddress);
 	m_ServerSocket->SetNonBlockingMode(true);
@@ -50,27 +50,27 @@ void NetworkManagerServer::ProcessIncomingPackets()
 		if (recievedBytes > 0)
 		{
 			InputMemoryBitStream packet(m_RecieveBuffer, recievedBytes * 8);
-			PacketType type;
-			packet.Read(type, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+			GameplayPacketType type;
+			packet.Read(type, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 
 			//Debug::LogFormat("Recieved packet of type %i, from %s", type, m_RecieveAddress.ToString().c_str());
 			//packet.HexDump();
 
 			switch (type)
 			{
-			case HELLO:
+			case GameplayPacketType::GPT_HELLO:
 				HandleHelloPacket(packet, m_RecieveAddress);
 				break;
-			case WELCOME:
+			case GameplayPacketType::GPT_WELCOME:
 				Debug::LogError("Server should not recieve WELCOME packets");
 				break;
-			case GAME_START:
+			case GameplayPacketType::GPT_GAME_START:
 				Debug::LogError("Server should not recieve GAME_START packets");
 				break;
-			case REPLICATION_DATA: // Actually just user inputs
+			case GameplayPacketType::GPT_REPLICATION_DATA: // Actually just user inputs
 				HandleReplication(packet, m_RecieveAddress);
 				break;
-			case MAX_PACKET:
+			case GameplayPacketType::GPT_MAX_PACKET:
 				Debug::LogError("No MAX_PACKET packets should ever be sent!");
 				break;
 			default:
@@ -237,7 +237,7 @@ void NetworkManagerServer::SendWelcomePacket(SocketAddress dest)
 	if (it != m_AddressToUserMap.end() && it->second != nullptr)
 	{
 		OutputMemoryBitStream welcomePacket;
-		welcomePacket.Write(PacketType::WELCOME, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+		welcomePacket.Write(GameplayPacketType::GPT_WELCOME, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 		welcomePacket.Write(it->second->GetUserID());
 
 		m_ServerSocket->SendTo(welcomePacket.GetBufferPtr(), welcomePacket.GetByteLength(), dest);
@@ -251,7 +251,7 @@ void NetworkManagerServer::SendWelcomePacket(SocketAddress dest)
 void NetworkManagerServer::SendGameStartPacket()
 {
 	OutputMemoryBitStream packet;
-	packet.Write(PacketType::GAME_START, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+	packet.Write(GameplayPacketType::GPT_GAME_START, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 	packet.Write(m_AddressToUserMap.size(), 32);
 	for (auto it : m_AddressToUserMap)
 	{
@@ -264,7 +264,7 @@ void NetworkManagerServer::SendGameStartPacket()
 	//packet.Write(k_ReplicationSendIntervall);
 
 	// Send to all clients
-	SendPacketToAllClients(packet, PacketType::GAME_START);
+	SendPacketToAllClients(packet, GameplayPacketType::GPT_GAME_START);
 }
 
 void NetworkManagerServer::SendWorldState()
@@ -275,7 +275,7 @@ void NetworkManagerServer::SendWorldState()
 	m_NextReplicationTime = Time::GetTime() + k_ReplicationSendIntervall;
 
 	OutputMemoryBitStream packet;
-	packet.Write(PacketType::REPLICATION_DATA, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+	packet.Write(GameplayPacketType::GPT_REPLICATION_DATA, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 
 	// Write packet id
 	packet.Write(m_NextPacketID++, 32);
@@ -287,10 +287,10 @@ void NetworkManagerServer::SendWorldState()
 		it.second->Write(packet);
 	}
 
-	SendPacketToAllClients(packet, PacketType::REPLICATION_DATA);
+	SendPacketToAllClients(packet, GameplayPacketType::GPT_REPLICATION_DATA);
 }
 
-void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet, PacketType packetType)
+void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet, GameplayPacketType packetType)
 {
 	for (auto it : m_AddressToUserMap)
 	{
@@ -298,7 +298,7 @@ void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet,
 		OutputMemoryBitStream clientPacket(packet);
 
 		// ACKs and RPC present only when replication data is being sent
-		if (packetType == PacketType::REPLICATION_DATA)
+		if (packetType == GameplayPacketType::GPT_REPLICATION_DATA)
 		{
 			// Write pending rpcs
 			m_RPCManager.WritePendingRPCs(it.second->GetUserID(), clientPacket);

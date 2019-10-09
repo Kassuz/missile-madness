@@ -26,7 +26,7 @@ bool NetworkManagerClient::Initialize()
 	else
 		address = SERVER_ADDRESS;
 
-	m_ServerAddress = SocketUtil::CreateSocketAress(address);
+	m_ServerAddress = SocketUtil::CreateSocketAddress(address);
 	if (m_ServerAddress == nullptr)
 	{
 		Debug::LogErrorFormat("Couldn't create SocketAddress from %s. Shutting down!", address);
@@ -65,24 +65,24 @@ void NetworkManagerClient::ProcessIncomingPackets()
 		if (recievedBytes > 0)
 		{
 			InputMemoryBitStream packet(m_RecieveBuffer, recievedBytes * 8);
-			PacketType type;
-			packet.Read(type, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+			GameplayPacketType type;
+			packet.Read(type, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 
 			switch (type)
 			{
-			case HELLO:
+			case GameplayPacketType::GPT_HELLO:
 				Debug::LogError("Client should not recieve HELLO packets");
 				break;
-			case WELCOME:
+			case GameplayPacketType::GPT_WELCOME:
 				ProcessWelcomePacket(packet);
 				break;
-			case GAME_START:
+			case GameplayPacketType::GPT_GAME_START:
 				ProcessGameStartPacket(packet);
 				break;
-			case REPLICATION_DATA:
+			case GameplayPacketType::GPT_REPLICATION_DATA:
 				ProcessReplicationData(packet);
 				break;
-			case MAX_PACKET:
+			case GameplayPacketType::GPT_MAX_PACKET:
 				Debug::LogError("No MAX_PACKET packets should ever be sent!");
 				break;
 			default:
@@ -151,7 +151,7 @@ void NetworkManagerClient::SendHelloPacket()
 	{
 		Debug::Log("Send hello packet");
 		OutputMemoryBitStream helloPacket;
-		helloPacket.Write(PacketType::HELLO, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+		helloPacket.Write(GameplayPacketType::GPT_HELLO, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 		helloPacket.Write(m_ClientUser->GetUsersName());
 
 		m_ClientSocket->SendTo(helloPacket.GetBufferPtr(), helloPacket.GetByteLength(), *m_ServerAddress);
@@ -168,7 +168,7 @@ void NetworkManagerClient::SendInputs()
 		m_NextInputSendTime = Time::GetTime() + k_InputSendIntervall;
 
 		OutputMemoryBitStream packet;
-		packet.Write(PacketType::REPLICATION_DATA, GetRequiredBits<PacketType::MAX_PACKET>::Value);
+		packet.Write(GameplayPacketType::GPT_REPLICATION_DATA, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
 		packet.Write(m_ClientUser->GetUserID()); // Write user id just to be sure
 		m_ClientUser->WriteMoves(packet);
 

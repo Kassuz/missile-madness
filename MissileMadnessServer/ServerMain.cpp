@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 #include "NetworkManagerServer.h"
+#include "LobbyManagerServer.h"
 #include "ServerGame.h"
 
 #include "Networking/TestObj.h"
@@ -10,6 +11,11 @@
 int main(int argc, char* argv[])
 {
 	std::cout << "Server started" << std::endl;
+
+	LobbyManagerServer lobbyManager;
+	lobbyManager.Start();
+
+	return 0;
 
 	NetworkManagerServer::Instance().Initialize();
 
@@ -52,6 +58,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// Do winsock cleanup
+	SocketUtil::CleanUp();
 
 	return 0;
 }

@@ -10,6 +10,8 @@
 #include "ClientProjectile.h"
 #include "CommandLineArgs.h"
 
+#include "InputManager.h"
+
 #include <GLFW/glfw3.h>
 
 Texture2D* ClientGame::s_PlayerTexture = nullptr;
@@ -26,11 +28,11 @@ ClientGame::ClientGame() : m_AvgFrameTime(50)
 void ClientGame::Update()
 {
 	// Get move
-	bool right = InputManager::Instance().GetKey(GLFW_KEY_D) || InputManager::Instance().GetKey(GLFW_KEY_RIGHT);
-	bool left  = InputManager::Instance().GetKey(GLFW_KEY_A) || InputManager::Instance().GetKey(GLFW_KEY_LEFT);
-	bool up    = InputManager::Instance().GetKey(GLFW_KEY_W) || InputManager::Instance().GetKey(GLFW_KEY_UP);
-	bool down  = InputManager::Instance().GetKey(GLFW_KEY_S) || InputManager::Instance().GetKey(GLFW_KEY_DOWN);
-	bool space = InputManager::Instance().GetKeyDown(GLFW_KEY_SPACE);
+	bool right = InputManager::GetKey(GLFW_KEY_D) || InputManager::GetKey(GLFW_KEY_RIGHT);
+	bool left  = InputManager::GetKey(GLFW_KEY_A) || InputManager::GetKey(GLFW_KEY_LEFT);
+	bool up    = InputManager::GetKey(GLFW_KEY_W) || InputManager::GetKey(GLFW_KEY_UP);
+	bool down  = InputManager::GetKey(GLFW_KEY_S) || InputManager::GetKey(GLFW_KEY_DOWN);
+	bool space = InputManager::GetKeyDown(GLFW_KEY_SPACE);
 
 	Move* m = new Move(right, left, up, down, space, Time::GetTime());
 	User::Me->AddNewMove(m);

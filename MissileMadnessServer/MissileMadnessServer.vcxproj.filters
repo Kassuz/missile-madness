@@ -9,6 +9,15 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="3rd Party">
+      <UniqueIdentifier>{71ce5e95-dde3-4f51-93d7-304e46c27839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd Party\Headers">
+      <UniqueIdentifier>{a5a9cea9-ce43-4d58-a459-64997fa2dd80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd Party\Source">
+      <UniqueIdentifier>{ef592973-bd06-4651-b21f-4e8ec7c1c3db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ServerMain.cpp">
@@ -32,6 +41,21 @@
     <ClCompile Include="ProjectileManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Database.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabaseManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientConnection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite3.c">
+      <Filter>3rd Party\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyManagerServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkManagerServer.h">
@@ -50,6 +74,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProjectileManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Database.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabaseManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite3.h">
+      <Filter>3rd Party\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="LobbyManagerServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

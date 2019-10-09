@@ -107,6 +107,12 @@
     <ClCompile Include="Networking\TCPSocket.cpp">
       <Filter>_Networking\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingEngine.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Types.h">
@@ -192,6 +198,15 @@
     </ClInclude>
     <ClInclude Include="Networking\SharedRPC.h">
       <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Networking\PacketTypes.h">
+      <Filter>_Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingEngine.h">
+      <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

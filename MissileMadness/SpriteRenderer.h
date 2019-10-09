@@ -19,7 +19,6 @@ public:
 	static SpriteRenderer& Instance();
 
 	void Init(glm::mat4 projectionMatrix);
-	void RenderSprites();
 	void RegisterSprite(Sprite* sprite);
 	void UnregisterSprite(Sprite* sprite);
 
@@ -30,6 +29,9 @@ private:
 	SpriteRenderer(const SpriteRenderer&) = delete;
 	SpriteRenderer& operator=(const SpriteRenderer&) = delete;
 
+	// Renders all sprites
+	// Should only be called from rendering engine
+	void RenderSprites();
 
 	std::vector<Sprite*> sprites;
 
@@ -38,5 +40,7 @@ private:
 	Shader* spriteShader;
 	glm::mat4 projectionMatrix;
 	UInt32 quadVAO;
+
+	friend class RenderingEngine;
 };
 

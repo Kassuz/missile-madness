@@ -5,19 +5,14 @@
 #include "NetworkedGameObject.h"
 #include "Sockets.h"
 
+#include "PacketTypes.h"
+
 #include <unordered_map>
 #include <vector>
 
 class User;
 
-enum PacketType 
-{
-	HELLO,
-	WELCOME,
-	GAME_START,
-	REPLICATION_DATA,
-	MAX_PACKET
-};
+
 
 class NetworkManager
 {
@@ -25,6 +20,8 @@ public:
 	typedef NetworkedGameObject* (*GameObjectCreationFunc)(UInt32);
 
 	const int k_MaxPacketsPerFrame = 30;
+
+	virtual ~NetworkManager() { }
 
 	virtual bool Initialize() = 0;
 	virtual void ProcessIncomingPackets() = 0;
@@ -63,7 +60,6 @@ public:
 
 protected:
 	NetworkManager() {}
-	virtual ~NetworkManager() {}
 
 	Byte m_RecieveBuffer[1500];
 	SocketAddress m_RecieveAddress;

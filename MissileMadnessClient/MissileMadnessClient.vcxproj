@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -157,6 +157,8 @@
     <ClCompile Include="ClientPlayer.cpp" />
     <ClCompile Include="ClientProjectile.cpp" />
     <ClCompile Include="CommandLineArgs.cpp" />
+    <ClCompile Include="LobbyManagerClient.cpp" />
+    <ClCompile Include="LobbyMenu.cpp" />
     <ClCompile Include="MissileMadness.cpp" />
     <ClCompile Include="NetworkManagerClient.cpp" />
     <ClCompile Include="ClientRPCs.cpp" />
@@ -168,6 +170,8 @@
     <ClInclude Include="ClientRPCs.h" />
     <ClInclude Include="CommandLineArgs.h" />
     <ClInclude Include="DebugPos.h" />
+    <ClInclude Include="LobbyManagerClient.h" />
+    <ClInclude Include="LobbyMenu.h" />
     <ClInclude Include="NetworkManagerClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

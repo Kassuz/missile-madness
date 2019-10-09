@@ -4,13 +4,17 @@
 
 #include "../Types.h"
 #include "../Move.h"
+#include "../Color.h"
 #include "MemoryBitStream.h"
 
 class User
 {
 public:
-	User() : m_UserName(""), m_UserID(0), m_IsMe(false) { }
-	User(std::string name, UInt32 id, bool isMe = false) : m_UserName(name), m_UserID(id), m_IsMe(isMe) { }
+	User() : m_UserName(""), m_UserID(0), m_IsMe(false), m_CharacterColor(Color::White()) 
+	{ }
+	User(const std::string& name, UInt32 id, bool isMe = false, Color color = Color::White()) 
+		: m_UserName(name), m_UserID(id), m_IsMe(isMe), m_CharacterColor(color)
+	{ }
 	~User() { }
 
 	static User* Me;
@@ -18,10 +22,12 @@ public:
 	const std::string GetUsersName() const { return m_UserName; } // Somehow there is macro for GetUserName???
 	const UInt32 GetUserID() const { return m_UserID; }
 	const bool IsMe() const { return m_IsMe; }
+	const Color GetCharacterColor() const { return m_CharacterColor; }
 
 	void SetUserName(std::string name) { m_UserName = name; }
 	void SetUserID(UInt32 id) { m_UserID = id; }
 	void SetIsMe(bool isMe) { m_IsMe = isMe; }
+	void SetCharacterColor(Color c) { m_CharacterColor = c; }
 
 	void AddNewMove(Move* move);
 	Move* GetFirstMove(bool peek = false);
@@ -40,6 +46,8 @@ private:
 	std::string m_UserName;
 	UInt32 m_UserID;
 	bool m_IsMe;
+
+	Color m_CharacterColor;
 	
 	MoveList m_UserMoves = nullptr; // Could also track tail, so adding would be faster
 	UInt32 m_MoveCount = 0U;

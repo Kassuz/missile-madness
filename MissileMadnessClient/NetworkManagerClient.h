@@ -17,6 +17,7 @@ class NetworkManagerClient : public NetworkManager
 public:
 	enum class ClientState { NOT_INITIALIZED, NOT_REGISTERED, WAITING, ENGINE_START, REPLICATING, DISCONNECTED };
 	
+	virtual ~NetworkManagerClient();
 	static NetworkManagerClient& Instance();
 
 	virtual bool Initialize() override;
@@ -39,7 +40,6 @@ public:
 
 protected:
 	NetworkManagerClient();
-	virtual ~NetworkManagerClient();
 
 private:	
 	ClientState m_ClientState = ClientState::NOT_INITIALIZED;
