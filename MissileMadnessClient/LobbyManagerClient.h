@@ -4,6 +4,7 @@
 #include "Networking/MemoryBitStream.h"
 
 #include "Types.h"
+#include "LobbyMenu.h"
 
 #include <unordered_map>
 
@@ -14,12 +15,15 @@ constexpr auto SERVER_ADDRESS_TCP = "127.0.0.1:45000";
 class LobbyManagerClient
 {
 public:
-	LobbyManagerClient() { }
+	LobbyManagerClient() : m_LobbyMenu(this) { }
 	~LobbyManagerClient() { }
 	LobbyManagerClient(const LobbyManagerClient& other) = delete;
 	LobbyManagerClient& operator=(const LobbyManagerClient& ohter) = delete;
 
 	void Start();
+
+	void SetReady();
+	void ChangeUserColor(Color newColor);
 
 private:
 	enum class LobbyStatus { LOGIN_MENU, LOGGED_IN, EXIT };
@@ -34,6 +38,8 @@ private:
 	std::unordered_map<UInt32, User*> m_Users;
 
 	const float k_ReconnectIntervall = 5.0f;
+
+	LobbyMenu m_LobbyMenu;
 
 	void ProcessPackets();
 

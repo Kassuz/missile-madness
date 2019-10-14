@@ -26,9 +26,15 @@ public:
 private:
 
 	void ProcessPacket(InputMemoryBitStream& packet, ClientConnectionPtr client);
+
+	void ProcessLoginData(InputMemoryBitStream& packet, ClientConnectionPtr client);
+	void ProcessNewUser(InputMemoryBitStream& packet, ClientConnectionPtr client);
+	void ProcessClientRequest(InputMemoryBitStream& packet, ClientConnectionPtr client);
+
 	void SendPacketToAllClients(OutputMemoryBitStream& packet);
 
-	void SendUserData(ClientConnectionPtr newClient);
+	void SendNewUserData(ClientConnectionPtr newClient);
+	void SendUserData(User* u);
 
 	void ClientDisconnected(UInt32 userID);
 

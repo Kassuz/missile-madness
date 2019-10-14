@@ -51,7 +51,7 @@ public:
 	bool BindString(std::string value, int index);
 	bool BindInt(int value, int index);
 	bool BindDouble(double value, int index);
-	bool BindFloat(float value, int index) { BindDouble(value, index); }
+	bool BindFloat(float value, int index) { return BindDouble(static_cast<double>(value), index); }
 
 private:
 	PreparedStatement(sqlite3_stmt* stmt) : m_Statement(stmt) { }

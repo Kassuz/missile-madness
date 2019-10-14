@@ -54,7 +54,7 @@ create trigger create_default_character
 after insert on users
 begin 
     insert into characters(userID, colorR, colorG, colorB) 
-    values (new.userID, 1.0, 0.0, 0.0);
+    values (new.userID, 1.0, 1.0, 1.0);
 end; 
 
 

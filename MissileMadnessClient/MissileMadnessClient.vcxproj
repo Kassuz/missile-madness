@@ -159,6 +159,7 @@
     <ClCompile Include="CommandLineArgs.cpp" />
     <ClCompile Include="LobbyManagerClient.cpp" />
     <ClCompile Include="LobbyMenu.cpp" />
+    <ClCompile Include="LobbyPlayer.cpp" />
     <ClCompile Include="MissileMadness.cpp" />
     <ClCompile Include="NetworkManagerClient.cpp" />
     <ClCompile Include="ClientRPCs.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="DebugPos.h" />
     <ClInclude Include="LobbyManagerClient.h" />
     <ClInclude Include="LobbyMenu.h" />
+    <ClInclude Include="LobbyPlayer.h" />
     <ClInclude Include="NetworkManagerClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

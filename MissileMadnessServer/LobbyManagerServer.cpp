@@ -107,100 +107,137 @@ void LobbyManagerServer::ProcessPacket(InputMemoryBitStream& packet, ClientConne
 	switch (type)
 	{
 	case LPT_LOGIN_DATA:
-	{
-		// Already logged in? -> Drop packet
-		if (client->GetConnectionStatus() != ConnectionStatus::NOT_LOGGED_IN)
-			return;
-		
-		std::string username, password;
-		packet.Read(username);
-		packet.Read(password);
-
-		// Create response packet
-		OutputMemoryBitStream response;
-		response.Write(LPT_SERVER_RESPONSE, GetRequiredBits<LPT_MAX_PACKET>::Value);
-
-		// Check that not already logged in
-		bool loggedIn = false;
-		for (auto conn : m_ClientConnections)
-		{
-			if (conn->GetUser() != nullptr && conn->GetUser()->GetUsersName() == username)
-			{
-				loggedIn = true;
-				break;
-			}
-		}
-
-		UInt32 userID;
-		bool success = !loggedIn && m_DatabaseManager.Login(username, password, userID);
-
-		// Login success!
-		if (success)
-		{
-			Debug::LogWarningFormat("Successfull login from %s as %s", client->GetTCPAddress()->ToString().c_str(), username.c_str());
-
-			client->LogIn(username, userID);
-			
-			response.Write(SR_LOGIN_OK, GetRequiredBits<SR_MAX_RESPONSE>::Value);
-			response.Write(username);
-			response.Write(userID);
-		}
-		// Login fail
-		else
-		{
-			response.Write(SR_LOGIN_WRONG, GetRequiredBits<SR_MAX_RESPONSE>::Value);
-		}
-
-		// Send response
-		client->GetTCPSocket()->Send(response.GetBufferPtr(), response.GetByteLength());
-
-		// Send user info
-		if (success)
-			SendUserData(client);
-		
+		ProcessLoginData(packet, client);
 		break;
-	}
 	case LPT_CREATE_USER:
-	{
-		// Already logged in? -> Drop packet
-		if (client->GetConnectionStatus() != ConnectionStatus::NOT_LOGGED_IN)
-			return;
-
-		std::string username, password;
-		packet.Read(username);
-		packet.Read(password);
-
-		OutputMemoryBitStream response;
-		response.Write(LPT_SERVER_RESPONSE, GetRequiredBits<LPT_MAX_PACKET>::Value);
-
-
-		if (m_DatabaseManager.UserExists(username))
-		{
-			response.Write(SR_USER_ALREADY_EXISTS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
-		}
-		else
-		{
-			m_DatabaseManager.AddNewUser(username, password);
-			response.Write(SR_USER_CREATE_SUCCESS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
-
-			// Test print
-			m_DatabaseManager.PrintUsers();
-		}
-
-		client->GetTCPSocket()->Send(response.GetBufferPtr(), response.GetByteLength());
-
+		ProcessNewUser(packet, client);
 		break;
-	}
 	case LPT_CLIENT_REQUEST:
-	{
-		// TODO
+		ProcessClientRequest(packet, client);
 		break;
-	}
 	case LPT_SERVER_RESPONSE:
 		Debug::LogError("Server should not recieve LPT_SERVER_RESPONSE packets");
 		break;
 	case LPT_MAX_PACKET:
 		Debug::LogError("Server should not recieve LPT_MAX_PACKET packets");
+		break;
+	default:
+		break;
+	}
+}
+
+void LobbyManagerServer::ProcessLoginData(InputMemoryBitStream& packet, ClientConnectionPtr client)
+{
+	// Already logged in? -> Drop packet
+	if (client->GetConnectionStatus() != ConnectionStatus::NOT_LOGGED_IN)
+		return;
+
+	std::string username, password;
+	packet.Read(username);
+	packet.Read(password);
+
+	// Create response packet
+	OutputMemoryBitStream response;
+	response.Write(LPT_SERVER_RESPONSE, GetRequiredBits<LPT_MAX_PACKET>::Value);
+
+	// Check that not already logged in
+	bool loggedIn = false;
+	for (auto conn : m_ClientConnections)
+	{
+		if (conn->GetUser() != nullptr && conn->GetUser()->GetUsersName() == username)
+		{
+			loggedIn = true;
+			break;
+		}
+	}
+
+	UInt32 userID;
+	bool success = !loggedIn && m_DatabaseManager.Login(username, password, userID);
+
+	// Login success!
+	if (success)
+	{
+		Debug::LogWarningFormat("Successfull login from %s as %s", client->GetTCPAddress()->ToString().c_str(), username.c_str());
+
+		client->LogIn(username, userID);
+		Color col = m_DatabaseManager.GetColorForUser(userID);
+		client->GetUser()->SetCharacterColor(col);
+
+		response.Write(SR_LOGIN_OK, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+		client->GetUser()->Write(response);
+	}
+	// Login fail
+	else
+	{
+		response.Write(SR_LOGIN_WRONG, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+	}
+
+	// Send response
+	client->GetTCPSocket()->Send(response.GetBufferPtr(), response.GetByteLength());
+
+	// Send user info
+	if (success)
+		SendNewUserData(client);
+}
+
+void LobbyManagerServer::ProcessNewUser(InputMemoryBitStream& packet, ClientConnectionPtr client)
+{
+	// Already logged in? -> Drop packet
+	if (client->GetConnectionStatus() != ConnectionStatus::NOT_LOGGED_IN)
+		return;
+
+	std::string username, password;
+	packet.Read(username);
+	packet.Read(password);
+
+	OutputMemoryBitStream response;
+	response.Write(LPT_SERVER_RESPONSE, GetRequiredBits<LPT_MAX_PACKET>::Value);
+
+
+	if (m_DatabaseManager.UserExists(username))
+	{
+		response.Write(SR_USER_ALREADY_EXISTS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+	}
+	else
+	{
+		m_DatabaseManager.AddNewUser(username, password);
+		response.Write(SR_USER_CREATE_SUCCESS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+
+		// Test print
+		m_DatabaseManager.PrintUsers();
+	}
+
+	client->GetTCPSocket()->Send(response.GetBufferPtr(), response.GetByteLength());
+}
+
+void LobbyManagerServer::ProcessClientRequest(InputMemoryBitStream& packet, ClientConnectionPtr client)
+{
+	ClientRequest request;
+	packet.Read(request, GetRequiredBits<CR_MAX_REQ>::Value);
+
+	switch (request)
+	{
+	case CR_SET_READY:
+	{
+		client->GetUser()->ToggleReady();
+		SendUserData(client->GetUser());
+		break;
+	}
+	case CR_COLOR_CHANGE:
+	{
+		glm::vec3 colVec; packet.Read(colVec);
+		Color newCol(colVec);
+		User* clientUser = client->GetUser();
+		clientUser->SetCharacterColor(newCol);
+		m_DatabaseManager.SetColorForUser(clientUser->GetUserID(), newCol);
+
+		SendUserData(clientUser);
+
+		break;
+	}
+	case CR_MATCH_DATA:
+		break;
+	case CR_MAX_REQ:
 		break;
 	default:
 		break;
@@ -214,24 +251,18 @@ void LobbyManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet)
 }
 
 // Inform existing clients of new client and new client of other clients
-void LobbyManagerServer::SendUserData(ClientConnectionPtr newClient)
+void LobbyManagerServer::SendNewUserData(ClientConnectionPtr newClient)
 {
 	// Packet structure
 	// Type: LPT_USER_DATA
 	// UserCount: UInt32
-	// For UserCount:
-	//		UserName: string
-	//		UserID: UInt32
-	//		CharacterColor: float * 4
+	// User::Write()
 
 	OutputMemoryBitStream newUserPacket, allUsersPacket;
 
 	newUserPacket.Write(LPT_USER_DATA, GetRequiredBits<LPT_MAX_PACKET>::Value);
 	newUserPacket.Write(1U, 32);
-	newUserPacket.Write(newClient->GetUser()->GetUsersName());
-	newUserPacket.Write(newClient->GetUser()->GetUserID());
-	Color userColor = newClient->GetUser()->GetCharacterColor();
-	newUserPacket.Write(static_cast<glm::vec3>(userColor));
+	newClient->GetUser()->Write(newUserPacket);
 
 	std::vector<User*> otherUsers;
 	for (auto conn : m_ClientConnections)
@@ -249,14 +280,21 @@ void LobbyManagerServer::SendUserData(ClientConnectionPtr newClient)
 
 		for (auto u : otherUsers)
 		{
-			allUsersPacket.Write(u->GetUsersName());
-			allUsersPacket.Write(u->GetUserID());
-			userColor = u->GetCharacterColor();
-			allUsersPacket.Write(static_cast<glm::vec3>(userColor));
+			u->Write(allUsersPacket);
 		}
 
 		newClient->GetTCPSocket()->Send(allUsersPacket.GetBufferPtr(), allUsersPacket.GetByteLength());
 	}
+}
+
+void LobbyManagerServer::SendUserData(User* u)
+{
+	OutputMemoryBitStream userData;
+	userData.Write(LPT_USER_DATA, GetRequiredBits<LPT_MAX_PACKET>::Value);
+	userData.Write(1U);
+	u->Write(userData);
+
+	SendPacketToAllClients(userData);
 }
 
 void LobbyManagerServer::ClientDisconnected(UInt32 userID)

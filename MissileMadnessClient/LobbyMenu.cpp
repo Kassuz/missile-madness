@@ -1,6 +1,8 @@
 #include "LobbyMenu.h"
 
 #include "Engine.h"
+#include "LobbyPlayer.h"
+#include "LobbyManagerClient.h"
 
 void LobbyMenu::Draw()
 {
@@ -23,6 +25,8 @@ void LobbyMenu::Draw()
 		break;
 	}
 
+	UpdatePlayers();
+
 	RenderingEngine::Render();
 
 	m_IsDirty = false;
@@ -36,7 +40,8 @@ void LobbyMenu::CheckInput()
 	{
 		if (InputManager::GetKeyDown(GLFW_KEY_1))
 		{
-			Debug::Log("Player is ready");
+			//Debug::Log("Player is ready");
+			m_LobbyManager->SetReady();
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_2))
 		{
@@ -55,34 +60,42 @@ void LobbyMenu::CheckInput()
 		if (InputManager::GetKeyDown(GLFW_KEY_1))
 		{
 			Debug::Log("Color black");
+			m_LobbyManager->ChangeUserColor(Color::Black());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_2))
 		{
 			Debug::Log("Color White");
+			m_LobbyManager->ChangeUserColor(Color::White());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_3))
 		{
 			Debug::Log("Color red");
+			m_LobbyManager->ChangeUserColor(Color::Red());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_4))
 		{
 			Debug::Log("Color green");
+			m_LobbyManager->ChangeUserColor(Color::Green());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_5))
 		{
 			Debug::Log("Color blue");
+			m_LobbyManager->ChangeUserColor(Color::Blue());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_6))
 		{
 			Debug::Log("Color yellow");
+			m_LobbyManager->ChangeUserColor(Color::Yellow());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_7))
 		{
 			Debug::Log("Color cyan");
+			m_LobbyManager->ChangeUserColor(Color::Cyan());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_8))
 		{
 			Debug::Log("Color magenta");
+			m_LobbyManager->ChangeUserColor(Color::Magenta());
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_9))
 		{
@@ -114,6 +127,26 @@ void LobbyMenu::CheckInput()
 	}
 	default:
 		break;
+	}
+}
+
+void LobbyMenu::AddNewPlayer(User* u)
+{
+	m_PlayerSprites.emplace_back(new LobbyPlayer(u));
+	m_IsDirty = true;
+}
+
+void LobbyMenu::DeletePlayer(User* u)
+{
+	for (auto it = m_PlayerSprites.begin(); it != m_PlayerSprites.end(); ++it)
+	{
+		if ((*it)->GetUser() == u)
+		{
+			delete (*it);
+			m_PlayerSprites.erase(it);
+			m_IsDirty = true;
+			return;
+		}
 	}
 }
 
@@ -154,6 +187,20 @@ void LobbyMenu::DrawStatsMenu()
 	TextRenderer::Instance().RenderText("3. Last 5 matches", 10.0f, 230.0f, 1.0f);
 	TextRenderer::Instance().RenderText("4. Return", 10.0f, 265.0f, 1.0f);
 	TextRenderer::Instance().RenderText("----------------", 10.0f, 285.0f, 1.5f);
+}
+
+void LobbyMenu::UpdatePlayers()
+{
+	float startX = 150.0f, xIncrease =  150.0f;
+	float startY = 100.0f, yIncrease = -100.0f;
+
+	for (int i = 0; i < m_PlayerSprites.size(); ++i)
+	{
+		LobbyPlayer* pl = m_PlayerSprites[i];
+		pl->GetTransform()->SetPosition(glm::vec3(startX + (i % 2) * xIncrease, startY + i * yIncrease, 0.0f));
+
+		pl->Update();
+	}
 }
 
 

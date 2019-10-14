@@ -18,6 +18,9 @@ public:
 	GameObject* GetGameObject() const { return m_GameObject; }
 	Int32 GetRenderLayer() const { return m_RenderLayer; }
 
+	void SetColor(Color c) { m_SpriteColor = c; }
+	void SetRenderLayer(Int32 layer) { m_RenderLayer = layer; }
+
 private:
 	Texture2D* m_Texture;
 	Color m_SpriteColor;

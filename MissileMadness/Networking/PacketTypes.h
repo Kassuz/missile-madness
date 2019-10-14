@@ -32,6 +32,7 @@ enum ServerResponse
 
 enum ClientRequest
 {
+	CR_SET_READY,
 	CR_COLOR_CHANGE,
 	CR_MATCH_DATA,
 	CR_MAX_REQ

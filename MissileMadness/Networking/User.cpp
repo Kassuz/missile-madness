@@ -134,3 +134,30 @@ void User::ReadMoves(InputMemoryBitStream& packet)
 		AddNewMove(m);
 	}
 }
+
+
+//	Username: string
+//	UserID: UInt32
+//	CharacterColor: glm::vec3
+//	IsReady: bool
+void User::Write(OutputMemoryBitStream& output)
+{
+	glm::vec3 colVec = static_cast<glm::vec3>(m_CharacterColor);
+
+	output.Write(m_UserName);
+	output.Write(m_UserID, 32);
+	output.Write(colVec);
+	output.Write(m_IsReady);
+}
+
+void User::Read(InputMemoryBitStream& input)
+{
+	glm::vec3 colVec;
+
+	input.Read(m_UserName);
+	input.Read(m_UserID, 32);
+	input.Read(colVec);
+	input.Read(m_IsReady);
+
+	m_CharacterColor = colVec;
+}

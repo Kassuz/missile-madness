@@ -1,60 +1,30 @@
-// OpenGL
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-// Math
-#include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/ext.hpp>
-
-// STD
 #include <iostream>
-#include <string>
-#include <cmath>
 
-// Engine
-#include "Engine.h"
-
-// Client specific
-#include "ClientPlayer.h"
-#include "ClientGame.h"
-#include "Move.h"
 #include "CommandLineArgs.h"
-
-// Networking
 #include "LobbyManagerClient.h"
-#include "NetworkManagerClient.h"
-#include "Networking/TestObj.h"
 
-const UInt32 SCREEN_WIDTH  = 800;
-const UInt32 SCREEN_HEIGHT = 600;
-
-//void KeyCallback(GLFWwindow* window, Int32 key, Int32 scancode, Int32 action, Int32 mods);
-//void MouseCallback(GLFWwindow* window, double xpos, double ypos);
-//void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 mods);
 
 int main(int argc, char* argv[])
 {
+	// cool logo
+	std::cout << "  /\\/\\ (_)___ ___(_) | ___    /\\/\\   __ _  __| |_ __   ___  ___ ___ " << std::endl;
+	std::cout << " /    \\| / __/ __| | |/ _ \\  /    \\ / _` |/ _` | '_ \\ / _ \\/ __/ __|" << std::endl;
+	std::cout << "/ /\\/\\ \\ \\__ \\__ \\ | |  __/ / /\\/\\ \\ (_| | (_| | | | |  __/\\__ \\__ \\" << std::endl;
+	std::cout << "\\/    \\/_|___/___/_|_|\\___| \\/    \\/\\__,_|\\__,_|_| |_|\\___||___/___/" << std::endl;
+	std::cout << "\n" << std::endl;
+
+	if (!CommandLineArgs::ProcessCommandLineArgs(argc, argv))
+	{
+		Debug::LogError("Failed to read command line arguments!");
+		return 1;
+	}
+
+	// Start Lobby
 	LobbyManagerClient lobbyManager;
 	lobbyManager.Start();
+
 	return 0;
 
-
-	//if (!CommandLineArgs::ProcessCommandLineArgs(argc, argv))
-	//{
-	//	Debug::LogError("Failed to read command line arguments!");
-	//	return 1;
-	//}
-
-	//// Cool logo
-	//std::cout << "  /\\/\\ (_)___ ___(_) | ___    /\\/\\   __ _  __| |_ __   ___  ___ ___ " << std::endl;
-	//std::cout << " /    \\| / __/ __| | |/ _ \\  /    \\ / _` |/ _` | '_ \\ / _ \\/ __/ __|" << std::endl;
-	//std::cout << "/ /\\/\\ \\ \\__ \\__ \\ | |  __/ / /\\/\\ \\ (_| | (_| | | | |  __/\\__ \\__ \\" << std::endl;
-	//std::cout << "\\/    \\/_|___/___/_|_|\\___| \\/    \\/\\__,_|\\__,_|_| |_|\\___||___/___/" << std::endl;
-
-	//std::cout << "\n" << std::endl;
 	//std::cout << ">> Enter your name: ";
 
 	//std::string name;
@@ -181,21 +151,3 @@ int main(int argc, char* argv[])
 
 	//return 0;
 }
-
-//void KeyCallback(GLFWwindow* window, Int32 key, Int32 scancode, Int32 action, Int32 mods)
-//{
-//	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-//		glfwSetWindowShouldClose(window, GL_TRUE);
-//
-//	InputManager::Instance().KeyCallback(window, key, scancode, action, mods);
-//}
-//
-//void MouseCallback(GLFWwindow* window, double xpos, double ypos)
-//{
-//	InputManager::Instance().MouseCallback(window, xpos, ypos);
-//}
-//
-//void MouseButtonCallback(GLFWwindow* window, Int32 button, Int32 action, Int32 mods)
-//{
-//	InputManager::Instance().MouseButtonCallback(window, button, action, mods);
-//}

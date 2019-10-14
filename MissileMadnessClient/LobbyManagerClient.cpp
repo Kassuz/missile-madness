@@ -5,8 +5,6 @@
 #include "MMTime.h"
 #include "Engine.h"
 
-#include "LobbyMenu.h"
-
 #include <iostream>
 #include <thread>
 
@@ -19,7 +17,6 @@ void LobbyManagerClient::Start()
 	}
 
 	m_ClientSocket = SocketUtil::CreateTCPSocket(INET);
-
 	if (m_ClientSocket == nullptr)
 	{
 		Debug::LogError("Creating client socket failed!");
@@ -32,7 +29,6 @@ void LobbyManagerClient::Start()
 		Debug::LogError("Creating server adress failed!");
 		return;
 	}
-
 
 	// Try to connect to server
 	float nextConnectTime = 0.0f;
@@ -75,7 +71,7 @@ void LobbyManagerClient::Start()
 				LoginMenu();
 			break;
 		case LobbyStatus::EXIT:
-			return;
+			return; // QUIT
 		default:
 			break;
 		}
@@ -86,14 +82,15 @@ void LobbyManagerClient::Start()
 	WindowPtr win = Window::CreateNewWindow(800, 600, "Missile Madness");
 	RenderingEngine::Init(win, "Resources/Fonts/Roboto-Black.ttf");
 
-	LobbyMenu menu;
+	m_LobbyMenu.AddNewPlayer(User::Me);
+
 
 	while (!win->WindowShouldClose() && m_LobbyStatus != LobbyStatus::EXIT)
 	{
 		ProcessPackets();
 
-		menu.CheckInput();
-		menu.Draw();
+		m_LobbyMenu.CheckInput();
+		m_LobbyMenu.Draw();
 
 		InputManager::Update();
 
@@ -101,6 +98,25 @@ void LobbyManagerClient::Start()
 	}
 	
 
+}
+
+void LobbyManagerClient::SetReady()
+{
+	OutputMemoryBitStream packet;
+	packet.Write(LPT_CLIENT_REQUEST, GetRequiredBits<LPT_MAX_PACKET>::Value);
+	packet.Write(CR_SET_READY, GetRequiredBits<CR_MAX_REQ>::Value);
+
+	m_ClientSocket->Send(packet.GetBufferPtr(), packet.GetByteLength());
+}
+
+void LobbyManagerClient::ChangeUserColor(Color newColor)
+{
+	OutputMemoryBitStream packet;
+	packet.Write(LPT_CLIENT_REQUEST, GetRequiredBits<LPT_MAX_PACKET>::Value);
+	packet.Write(CR_COLOR_CHANGE, GetRequiredBits<CR_MAX_REQ>::Value);
+	packet.Write(static_cast<glm::vec3>(newColor));
+
+	m_ClientSocket->Send(packet.GetBufferPtr(), packet.GetByteLength());
 }
 
 void LobbyManagerClient::ProcessPackets()
@@ -162,18 +178,25 @@ void LobbyManagerClient::ProcessUserData(InputMemoryBitStream& packet)
 	std::string username;
 	UInt32 userID;
 	glm::vec3 color;
+	bool ready;
 
 	for (UInt32 i = 0U; i < userCount; ++i)
 	{
+		// Can't use User::Read(), beecause we don't know which user to read
+		// TODO Maybe figure out better solution
 		packet.Read(username);
 		packet.Read(userID);
 		packet.Read(color);
+		packet.Read(ready);
 
 		auto usIt = m_Users.find(userID);
 		if (usIt == m_Users.end() && userID != User::Me->GetUserID()) // Second should always be true
 		{
 			User* u = new User(username, userID, false, color);
+			u->SetReady(ready);
+
 			m_Users.emplace(userID, u);
+			m_LobbyMenu.AddNewPlayer(u);
 		}
 		else
 		{
@@ -181,16 +204,11 @@ void LobbyManagerClient::ProcessUserData(InputMemoryBitStream& packet)
 			u->SetUserName(username);
 			u->SetUserID(userID);
 			u->SetCharacterColor(Color(color));
+			u->SetReady(ready);
 		}
 	}
 
-	// Test print
-	Debug::Log("");
-	Debug::Log("Current Users: ");
-	for (auto it : m_Users)
-	{
-		Debug::LogFormat("User %s, ID: %u", it.second->GetUsersName().c_str(), it.second->GetUserID());
-	}
+	m_LobbyMenu.SetDirty();
 }
 
 void LobbyManagerClient::ProcessServerResponse(InputMemoryBitStream& packet)
@@ -213,8 +231,10 @@ void LobbyManagerClient::ProcessServerResponse(InputMemoryBitStream& packet)
 			// Get user stats
 			std::string username;	packet.Read(username);
 			UInt32 userID;			packet.Read(userID);
+			glm::vec3 color;		packet.Read(color);
+			bool ready;				packet.Read(ready); // This is false
 
-			User* me = new User(username, userID, true);
+			User* me = new User(username, userID, true, Color(color));
 			User::Me = me;
 			m_Users.emplace(userID, me);
 			Debug::LogFormat("Login success! User ID: %u", userID);
@@ -248,8 +268,8 @@ void LobbyManagerClient::ProcessUserDisconnect(InputMemoryBitStream& packet)
 	if (usIt != m_Users.end())
 	{
 		User* u = usIt->second;
+		m_LobbyMenu.DeletePlayer(u);
 		m_Users.erase(usIt);
-
 		Debug::LogErrorFormat("User %s disconnected!", u->GetUsersName().c_str());
 		delete u;
 	}

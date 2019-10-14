@@ -38,7 +38,7 @@ private:
 
 	GLFWwindow* m_WindowPtr;
 
-	Color m_ClearColor = Color(0.35, 0.35, 0.35, 1.0f);
+	Color m_ClearColor = Color(0.35f, 0.35f, 0.35f, 1.0f);
 
 	static std::shared_ptr<Window> s_WindowInstance;
 };
