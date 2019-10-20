@@ -32,7 +32,7 @@ create table characters (
 
 create table matches (
     matchID     integer primary key,
-    timestamp   datetime,
+    timestamp   integer,
     playerCount integer,
     duration    float
 );

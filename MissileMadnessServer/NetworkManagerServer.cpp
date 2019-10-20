@@ -4,6 +4,8 @@
 #include "Networking/User.h"
 #include "Networking/SharedRPC.h"
 
+
+
 NetworkManagerServer::NetworkManagerServer()
 {
 }
@@ -19,26 +21,38 @@ NetworkManagerServer::~NetworkManagerServer()
 	m_UserToAddressMap.clear();
 }
 
-NetworkManagerServer& NetworkManagerServer::Instance()
-{
-	static NetworkManagerServer instance;
-	return instance;
-}
+//NetworkManagerServer& NetworkManagerServer::Instance()
+//{
+//	static NetworkManagerServer instance;
+//	return instance;
+//}
 
-bool NetworkManagerServer::Initialize()
+bool NetworkManagerServer::Initialize(std::vector<ClientConnectionPtr> clients)
 {
-	SocketUtil::StaticInit();
-
 	m_ServerSocket = SocketUtil::CreateUDPSocket(INET);
+	if (m_ServerSocket == nullptr)
+	{
+		Debug::LogError("Creating Server Socket failed");
+		return false;
+	}
 
 	SocketAddress serverAddress(INADDR_ANY, SERVER_PORT_UDP);
 
-	m_ServerSocket->Bind(serverAddress);
-	m_ServerSocket->SetNonBlockingMode(true);
+	if (m_ServerSocket->Bind(serverAddress) != NO_ERROR)
+	{
+		Debug::LogErrorFormat("Binding server socket to %s failed", serverAddress.ToString().c_str());
+		return false;
+	}
+	if (m_ServerSocket->SetNonBlockingMode(true) != NO_ERROR)
+	{
+		Debug::LogError("Setting sever socket to non blocking mode failed");
+		return false;
+	}
 
 	m_ServerState = ServerState::WELCOMING_CLIENTS;
 
-	// TODO fix
+	m_Clients = clients;
+
 	return true;
 }
 
@@ -58,19 +72,22 @@ void NetworkManagerServer::ProcessIncomingPackets()
 
 			switch (type)
 			{
-			case GameplayPacketType::GPT_HELLO:
+			case GPT_HELLO:
 				HandleHelloPacket(packet, m_RecieveAddress);
 				break;
-			case GameplayPacketType::GPT_WELCOME:
+			case GPT_WELCOME:
 				Debug::LogError("Server should not recieve WELCOME packets");
 				break;
-			case GameplayPacketType::GPT_GAME_START:
+			case GPT_GAME_START:
 				Debug::LogError("Server should not recieve GAME_START packets");
 				break;
-			case GameplayPacketType::GPT_REPLICATION_DATA: // Actually just user inputs
+			case GPT_REPLICATION_DATA: // Actually just user inputs
 				HandleReplication(packet, m_RecieveAddress);
 				break;
-			case GameplayPacketType::GPT_MAX_PACKET:
+			case GPT_GAME_ENDED:
+				Debug::LogError("No GAME_ENDED packets should ever be sent!");
+				break;
+			case GPT_MAX_PACKET:
 				Debug::LogError("No MAX_PACKET packets should ever be sent!");
 				break;
 			default:
@@ -81,9 +98,16 @@ void NetworkManagerServer::ProcessIncomingPackets()
 		else if (recievedBytes == -WSAECONNRESET)
 		{
 			// Client has closed -> DC client
-			auto it = m_AddressToUserMap.find(m_RecieveAddress);
-			if (it != m_AddressToUserMap.end())
-				DisconnectUser(it->second, "Connection reset");
+			if (m_ServerState == ServerState::ENDING)
+			{
+				HandleGameEnded(m_RecieveAddress);
+			}
+			else
+			{
+				auto it = m_AddressToUserMap.find(m_RecieveAddress);
+				if (it != m_AddressToUserMap.end())
+					DisconnectUser(it->second, "Connection reset");
+			}
 		}
 
 	}
@@ -93,21 +117,23 @@ void NetworkManagerServer::UpdateSendingPackets()
 {
 	switch (m_ServerState)
 	{
-	case NetworkManagerServer::ServerState::NOT_INITIALIZED:
+	case ServerState::NOT_INITIALIZED:
 		break;
-	case NetworkManagerServer::ServerState::WELCOMING_CLIENTS:
-		if (m_AddressToUserMap.size() >= k_MaxUsers)
+	case ServerState::WELCOMING_CLIENTS:
+		if (m_AddressToUserMap.size() == m_Clients.size())
 		{
-			Debug::Log("Max users joined, start game!");
+			//Debug::Log("Max users joined, start game!");s
 			m_ServerState = ServerState::STARTING;
-			SendGameStartPacket();
+			//SendGameStartPacket();
 		}
 		break;
-	case NetworkManagerServer::ServerState::STARTING:
+	case ServerState::STARTING:
 		break;
-	case NetworkManagerServer::ServerState::SIMULATING:
+	case ServerState::SIMULATING:
 		SendWorldState();
 		break;
+	case ServerState::ENDING:
+		SendGameEndedPacket();
 	default:
 		break;
 	}
@@ -146,7 +172,17 @@ void NetworkManagerServer::DisconnectUser(User* userToDisconnect, const char* di
 		m_AddressToUserMap.erase(it->second);
 		m_UserToAddressMap.erase(userToDisconnect);
 
-		delete userToDisconnect;
+		// Don't delete user yet, just set as disconnected
+		for (auto conn : m_Clients)
+		{
+			if (conn->GetUser() == userToDisconnect)
+			{
+				conn->SetConnectionStatus(ConnectionStatus::DISCONNECTED);
+				break;
+			}
+		}
+
+		//delete userToDisconnect;
 	}
 }
 
@@ -154,9 +190,13 @@ void NetworkManagerServer::CheckForDisconnectedUsers()
 {
 	for (auto it : m_UserToAddressMap)
 	{
-		if (it.first->GetLastRecievedPacketTime() > 0.0 && Time::GetTime() - it.first->GetLastRecievedPacketTime() >= k_DisconnectTime)
+		if (it.first->GetLastRecievedPacketTime() > 0.0 && Time::GetRealTime() - it.first->GetLastRecievedPacketTime() >= k_DisconnectTime)
 		{
-			DisconnectUser(it.first, "Did not recieve any packets for 10s.");
+			if (m_ServerState == ServerState::ENDING)
+				HandleGameEnded(it.second);
+			else
+				DisconnectUser(it.first, "Did not recieve any packets for 10s.");
+	
 			return; // Disconnect one user per check for simplicity
 		}
 	}
@@ -168,20 +208,32 @@ void NetworkManagerServer::HandleHelloPacket(InputMemoryBitStream& packet, Socke
 	{
 		if (m_AddressToUserMap.find(sender) == m_AddressToUserMap.end())
 		{
-			if (m_AddressToUserMap.size() >= k_MaxUsers)
+			// Client not yet welcomed
+			UInt32 userID; packet.Read(userID);
+
+			User* u = nullptr;
+			for (auto conn : m_Clients)
 			{
-				Debug::LogWarning("Already enough users, ignore this one :(");
+				if (conn->GetUser()->GetUserID() == userID)
+				{
+					u = conn->GetUser();
+					break;
+				}
+			}
+
+			if (u != nullptr)
+			{
+				m_AddressToUserMap.emplace(sender, u);
+				m_UserToAddressMap.emplace(u, sender);
+				m_RPCManager.InitUser(u->GetUserID());
+				u->SetLastRecievedPacketTime(0.0f);
+				Debug::LogFormat("User %s, with id %u, UDP connection working", u->GetUsersName().c_str(), u->GetUserID());
+			}
+			else
+			{
+				Debug::LogErrorFormat("Don't have client connection with userID:%u", userID);
 				return;
 			}
-			// Client not yet welcomed
-			std::string userName;
-			packet.Read(userName);
-			User* u = new User(userName, m_NextUserID++);
-			m_AddressToUserMap.emplace(sender, u);
-			m_UserToAddressMap.emplace(u, sender);
-			m_RPCManager.InitUser(u->GetUserID());
-
-			Debug::LogFormat("Welcomed user %s, with id %u!", u->GetUsersName().c_str(), u->GetUserID());
 		}
 		else
 		{
@@ -189,7 +241,9 @@ void NetworkManagerServer::HandleHelloPacket(InputMemoryBitStream& packet, Socke
 		}
 
 		// Send welcome packet even if user already welcomed, packet might not have been recieved
-		SendWelcomePacket(sender);
+		OutputMemoryBitStream welcomePacket;
+		welcomePacket.Write(GameplayPacketType::GPT_WELCOME, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
+		m_ServerSocket->SendTo(welcomePacket.GetBufferPtr(), welcomePacket.GetByteLength(), sender);
 	}
 	else
 	{
@@ -221,7 +275,7 @@ void NetworkManagerServer::HandleReplication(InputMemoryBitStream& packet, Socke
 			m_RPCManager.ACKRPCs(userID, lastRPC);
 
 			// Set last recieved time
-			u->SetLastRecievedPacketTime(Time::GetTime());
+			u->SetLastRecievedPacketTime(Time::GetRealTime());
 		}
 
 	}
@@ -231,22 +285,22 @@ void NetworkManagerServer::HandleReplication(InputMemoryBitStream& packet, Socke
 	}
 }
 
-void NetworkManagerServer::SendWelcomePacket(SocketAddress dest)
+void NetworkManagerServer::HandleGameEnded(SocketAddress sender)
 {
-	auto it = m_AddressToUserMap.find(dest);
-	if (it != m_AddressToUserMap.end() && it->second != nullptr)
+	auto it = m_AddressToUserMap.find(sender);
+	if (it != m_AddressToUserMap.end())
 	{
-		OutputMemoryBitStream welcomePacket;
-		welcomePacket.Write(GameplayPacketType::GPT_WELCOME, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
-		welcomePacket.Write(it->second->GetUserID());
+		// Can disconnect user
+		Debug::LogWarningFormat("User %s game ended successfully!", it->second->GetUsersName().c_str());
+		m_UserToAddressMap.erase(it->second);
+		m_AddressToUserMap.erase(it);
 
-		m_ServerSocket->SendTo(welcomePacket.GetBufferPtr(), welcomePacket.GetByteLength(), dest);
-	}
-	else
-	{
-		Debug::LogError("Tried to send welcome-packet, but couldt find user!");
+		if (UserCount() == 0)
+			m_ServerState = ServerState::FINISHED;
 	}
 }
+
+
 
 void NetworkManagerServer::SendGameStartPacket()
 {
@@ -288,6 +342,15 @@ void NetworkManagerServer::SendWorldState()
 	}
 
 	SendPacketToAllClients(packet, GameplayPacketType::GPT_REPLICATION_DATA);
+}
+
+void NetworkManagerServer::SendGameEndedPacket()
+{
+	OutputMemoryBitStream packet;
+	packet.Write(GPT_GAME_ENDED, GetRequiredBits<GPT_MAX_PACKET>::Value);
+	packet.Write(m_GameWinner);
+
+	SendPacketToAllClients(packet, GPT_GAME_ENDED);
 }
 
 void NetworkManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet, GameplayPacketType packetType)

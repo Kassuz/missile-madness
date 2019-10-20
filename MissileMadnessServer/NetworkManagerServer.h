@@ -6,6 +6,7 @@
 #include "Types.h"
 
 #include "RPCManagerServer.h"
+#include "ClientConnection.h"
 
 #include <unordered_map>
 
@@ -14,13 +15,14 @@ constexpr UInt16 SERVER_PORT_UDP = 45000;
 class NetworkManagerServer : public NetworkManager
 {
 public:
-	enum class ServerState { NOT_INITIALIZED, WELCOMING_CLIENTS, STARTING, SIMULATING };
+	enum class ServerState { NOT_INITIALIZED, WELCOMING_CLIENTS, STARTING, SIMULATING, ENDING, FINISHED };
 
+	NetworkManagerServer();
 	virtual ~NetworkManagerServer();
 	
-	static NetworkManagerServer& Instance();
+	//static NetworkManagerServer& Instance();
 
-	virtual bool Initialize() override;
+	virtual bool Initialize(std::vector<ClientConnectionPtr> clients);
 	virtual void ProcessIncomingPackets() override;
 
 	virtual void UpdateSendingPackets() override;
@@ -39,7 +41,9 @@ public:
 	std::vector<User*> GetAllUsers();
 
 	bool IsGameStarting() const { return m_ServerState == ServerState::STARTING; }
+	bool IsGameFinished() const { return m_ServerState == ServerState::FINISHED; }
 	void StartGame() { m_ServerState = ServerState::SIMULATING; }
+	void EndGame(UInt32 winner) { m_ServerState = ServerState::ENDING; m_GameWinner = winner; }
 
 	UInt32 UserCount() const { return m_AddressToUserMap.size(); }
 
@@ -48,9 +52,6 @@ public:
 	RPCManagerServer& RPC() { return m_RPCManager; }
 
 
-protected:
-	NetworkManagerServer();
-
 private:
 	const UInt32 k_MaxUsers = 2U;
 
@@ -58,9 +59,9 @@ private:
 
 	UDPSocketPtr m_ServerSocket;
 
-	UInt32 m_NextUserID = 1; // 0 is reserved for not initialized users
 	UInt32 m_NextPacketID = 1; // Used for world state packets only
 
+	std::vector<ClientConnectionPtr> m_Clients;
 	std::unordered_map<SocketAddress, User*> m_AddressToUserMap;
 	std::unordered_map<User*, SocketAddress> m_UserToAddressMap;
 
@@ -69,17 +70,20 @@ private:
 
 	void HandleHelloPacket(InputMemoryBitStream& packet, SocketAddress sender);
 	void HandleReplication(InputMemoryBitStream& packet, SocketAddress sender);
+	void HandleGameEnded(SocketAddress sender);
 
 	const float k_ReplicationSendIntervall = 1.0f / 15.0f;
 	float m_NextReplicationTime = 0.0f;
 
-	void SendWelcomePacket(SocketAddress dest);
 	void SendGameStartPacket();
 	void SendWorldState();
+	void SendGameEndedPacket();
 
 	void SendPacketToAllClients(OutputMemoryBitStream& packet, GameplayPacketType packetType);
 
 	void WriteACKs(OutputMemoryBitStream& packet, User* user);
 
 	RPCManagerServer m_RPCManager;
+
+	UInt32 m_GameWinner = 0U;
 };

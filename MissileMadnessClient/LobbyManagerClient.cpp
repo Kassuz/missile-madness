@@ -1,9 +1,8 @@
 #include "LobbyManagerClient.h"
 
-#include "Networking/PacketTypes.h"
 #include "Networking/User.h"
-#include "MMTime.h"
 #include "Engine.h"
+#include "ClientGame.h"
 
 #include <iostream>
 #include <thread>
@@ -34,14 +33,14 @@ void LobbyManagerClient::Start()
 	float nextConnectTime = 0.0f;
 	while (true)
 	{
-		if (Time::GetTime() > nextConnectTime)
+		if (Time::GetRealTime() > nextConnectTime)
 		{
 			Int32 res = m_ClientSocket->Connect(*serverAddress);
 			
 			if (res != NO_ERROR)
 			{
 				Debug::LogErrorFormat("Connecting failed! Trying again in %1.1fs", k_ReconnectIntervall);
-				nextConnectTime = Time::GetTime() + k_ReconnectIntervall;
+				nextConnectTime = Time::GetRealTime() + k_ReconnectIntervall;
 			}
 			else
 			{
@@ -87,6 +86,29 @@ void LobbyManagerClient::Start()
 
 	while (!win->WindowShouldClose() && m_LobbyStatus != LobbyStatus::EXIT)
 	{
+		if (m_GameShouldStart)
+		{
+			std::vector<User*> userVec;
+			for (auto it : m_Users)
+				userVec.push_back(it.second);
+
+			m_LobbyMenu.StartGame();
+
+			ClientGame game;
+			std::string winner = "";
+			if (!game.StartGame(win, userVec, winner))
+			{
+				// Error in game
+				Debug::LogError("Game had error. Shutting down!");
+				win->CloseWindow();
+				continue;
+			}
+
+			m_GameShouldStart = false;
+			m_LobbyMenu.ReturnToLobby(winner);
+		}
+
+
 		ProcessPackets();
 
 		m_LobbyMenu.CheckInput();
@@ -97,7 +119,7 @@ void LobbyManagerClient::Start()
 		win->PollEvents();
 	}
 	
-
+	std::cout << "\n\nGoodbye!" << std::endl;
 }
 
 void LobbyManagerClient::SetReady()
@@ -115,6 +137,16 @@ void LobbyManagerClient::ChangeUserColor(Color newColor)
 	packet.Write(LPT_CLIENT_REQUEST, GetRequiredBits<LPT_MAX_PACKET>::Value);
 	packet.Write(CR_COLOR_CHANGE, GetRequiredBits<CR_MAX_REQ>::Value);
 	packet.Write(static_cast<glm::vec3>(newColor));
+
+	m_ClientSocket->Send(packet.GetBufferPtr(), packet.GetByteLength());
+}
+
+void LobbyManagerClient::RequestStats(MatchDataFormat type)
+{
+	OutputMemoryBitStream packet;
+	packet.Write(LPT_CLIENT_REQUEST, GetRequiredBits<LPT_MAX_PACKET>::Value);
+	packet.Write(CR_MATCH_DATA, GetRequiredBits<CR_MAX_REQ>::Value);
+	packet.Write(type, GetRequiredBits<MDF_MAX_FORMAT>::Value);
 
 	m_ClientSocket->Send(packet.GetBufferPtr(), packet.GetByteLength());
 }
@@ -150,6 +182,10 @@ void LobbyManagerClient::ProcessPackets()
 			break;
 		case LPT_SERVER_RESPONSE:
 			ProcessServerResponse(packet);
+			break;
+		case LPT_GAME_START:
+			m_GameShouldStart = true;
+			Debug::Log("Game start packet recieved!");
 			break;
 		case LPT_MAX_PACKET:
 			Debug::LogError("MAX_PACKET should never be sent!");
@@ -277,8 +313,24 @@ void LobbyManagerClient::ProcessUserDisconnect(InputMemoryBitStream& packet)
 
 void LobbyManagerClient::ProcessMatchData(InputMemoryBitStream& packet)
 {
-	// TODO MAtch data packets
-	Debug::LogWarning("MATCH_DATA packets not yet handled!");
+	std::vector<std::string> stats;
+	
+	UInt32 count; packet.Read(count);
+	if (count > 0)
+	{
+		std::string s;
+		for (int i = 0; i < count; ++i)
+		{
+			packet.Read(s);
+			stats.push_back(s);
+		}
+	}
+	else
+	{
+		stats.push_back("NO STATS :(");
+	}
+
+	m_LobbyMenu.DisplayStats(stats);
 }
 
 void LobbyManagerClient::LoginMenu()
@@ -344,19 +396,64 @@ void LobbyManagerClient::LoginMenu()
 	}
 }
 
+namespace
+{
+	// Shows asteriks when typing password
+	std::string Getpass(bool show_asterisk = true)
+	{
+		const char BACKSPACE = 8;
+		const char RETURN = 13;
+
+		std::string password;
+		unsigned char ch = 0;
+
+		DWORD con_mode;
+		DWORD dwRead;
+
+		HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+
+		GetConsoleMode(hIn, &con_mode);
+		SetConsoleMode(hIn, con_mode & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT));
+
+		while (ReadConsoleA(hIn, &ch, 1, &dwRead, NULL) && ch != RETURN)
+		{
+			if (ch == BACKSPACE)
+			{
+				if (password.length() != 0)
+				{
+					if (show_asterisk)
+						std::cout << "\b \b";
+					password.resize(password.length() - 1);
+				}
+			}
+			else
+			{
+				password += ch;
+				if (show_asterisk)
+					std::cout << '*';
+			}
+		}
+		std::cout << std::endl;
+
+		SetConsoleMode(hIn, con_mode);
+
+		return password;
+	}
+}
+
 bool LobbyManagerClient::GetUsernameAndPassword(std::string& username, std::string& password, bool retypePassword)
 {
 	std::cout << std::endl;
 	std::cout << "Enter username: ";
 	std::getline(std::cin, username);
 	std::cout << "Enter password: ";
-	std::getline(std::cin, password);
+	password = Getpass();
 
 	if (retypePassword)
 	{
 		std::string password2;
 		std::cout << "Retype password: ";
-		std::getline(std::cin, password2);
+		password2 = Getpass();
 
 		if (password != password2)
 		{

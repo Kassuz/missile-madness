@@ -5,13 +5,21 @@
 
 class ServerPlayer;
 class ServerProjectile;
+class NetworkManagerServer;
 
 class ProjectileManager
 {
 
 public:
-	//static ProjectileManager& Instance();
 	ProjectileManager();
+	~ProjectileManager();
+	ProjectileManager(const ProjectileManager& other) = delete;
+	ProjectileManager& operator=(const ProjectileManager& other) = delete;
+
+	void Init(NetworkManagerServer* netManager)
+	{
+		m_NetworkManagerServer = netManager;
+	}
 
 	void SpawnProjectile(ServerPlayer* owner, glm::vec3 position, glm::vec3 direction);
 
@@ -19,11 +27,9 @@ public:
 
 	std::vector<ServerProjectile*> GetProjectiles() const { return m_Projectiles; }
 
-	~ProjectileManager();
-	ProjectileManager(const ProjectileManager& other) = delete;
-	ProjectileManager& operator=(const ProjectileManager& other) = delete;
 
 private:
+	NetworkManagerServer* m_NetworkManagerServer = nullptr;
 	std::vector<ServerProjectile*> m_Projectiles;
 };
 

@@ -15,24 +15,27 @@ constexpr auto SERVER_ADDRESS = "127.0.0.1:45000";
 class NetworkManagerClient : public NetworkManager
 {
 public:
-	enum class ClientState { NOT_INITIALIZED, NOT_REGISTERED, WAITING, ENGINE_START, REPLICATING, DISCONNECTED };
+	enum class ClientState { NOT_INITIALIZED, NOT_REGISTERED, WAITING, REPLICATING, DISCONNECTED, GAME_ENDED };
 	
 	virtual ~NetworkManagerClient();
 	static NetworkManagerClient& Instance();
 
-	virtual bool Initialize() override;
+	virtual bool Initialize(std::vector<User*> users);
 	virtual void ProcessIncomingPackets() override;
 
 	virtual void UpdateSendingPackets() override;
 
-	void InitUser(std::string userName);
+	//void InitUser(std::string userName);
 
 	const ClientState GetClientState() const { return m_ClientState; }
 
 	const bool GameShouldStart() const { return m_GameShouldStart; }
 	void StartGame() { m_ClientState = ClientState::REPLICATING; }
+	const bool GameShouldEnd() const { return m_ClientState == ClientState::GAME_ENDED; }
+	void EndGame();
 
 	User* GetUserWithID(UInt32 userID);
+	User* GetWinningUser();
 
 	float GetRTT() const { return m_RTT.GetAverage(); };
 	UInt32 GetDroppedPacketCount() const { return m_DroppedPacketCount; }
@@ -62,12 +65,17 @@ private:
 
 	UInt32 m_LastProcessedPacketID = 0;
 
+	UInt32 m_WinningUserID = 0U;
+
+	void FlushClientSocket();
+
 	void SendHelloPacket();
 	void SendInputs();
 
 	void ProcessWelcomePacket(InputMemoryBitStream& packet);
-	void ProcessGameStartPacket(InputMemoryBitStream& packet);
+	//void ProcessGameStartPacket(InputMemoryBitStream& packet);
 	void ProcessReplicationData(InputMemoryBitStream& packet);
+	void ProcessGameEndedPacket(InputMemoryBitStream& packet);
 
 	// Stuff for calculating RTT
 	ExtraMath::AverageValue<float> m_RTT;

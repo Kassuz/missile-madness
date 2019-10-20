@@ -5,15 +5,18 @@
 #include "ClientPlayer.h"
 #include "ClientProjectile.h"
 #include "ExtraMath.h"
+#include "Window.h"
 
 class Texture2D;
+class User;
 
 class ClientGame
 {
 public:
 	ClientGame();
-	~ClientGame() { }
+	~ClientGame();
 
+	bool StartGame(WindowPtr window, std::vector<User*> users, std::string& winner);
 	void Update();
 
 	static NetworkedGameObject* CreatePlayer(UInt32 networkID);

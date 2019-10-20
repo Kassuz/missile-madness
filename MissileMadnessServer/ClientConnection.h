@@ -7,7 +7,8 @@
 enum class ConnectionStatus
 {
 	NOT_LOGGED_IN,
-	LOGGED_IN
+	LOGGED_IN,
+	DISCONNECTED
 };
 
 class ClientConnection

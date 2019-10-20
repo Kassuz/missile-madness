@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <iostream>
+#include <iomanip>
 
 #include <glad/glad.h>
 
@@ -16,7 +17,7 @@ HANDLE Debug::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 void Debug::Log(const std::string& text)
 {
 #ifdef _DEBUG
-	std::cout << "LOG   >> " << Time::GetTime() << " >> " << text << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << "LOG   >> " << Time::GetRealTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 
@@ -30,7 +31,7 @@ void Debug::LogFormat(const char* inFormat, ...)
 
 	_vsnprintf_s(buff, 4096, 4096, inFormat, args);
 
-	std::cout  << "LOG   >> " << Time::GetTime() << " >> " << buff << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << "LOG   >> " << Time::GetRealTime() << " >> " << buff << std::endl;
 #endif // _DEBUG
 }
 
@@ -40,7 +41,7 @@ void Debug::LogError(const std::string& text)
 	SetConsoleTextAttribute(hConsole, 12);
 	std::cout << "ERROR >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << Time::GetTime() << " >> " << text << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << Time::GetRealTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 
@@ -57,7 +58,7 @@ void Debug::LogErrorFormat(const char* inFormat, ...)
 	SetConsoleTextAttribute(hConsole, 12);
 	std::cout << "ERROR >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << Time::GetTime() << " >> " << buff << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << Time::GetRealTime() << " >> " << buff << std::endl;
 #endif // _DEBUG
 }
 
@@ -67,7 +68,7 @@ void Debug::LogWarning(const std::string& text)
 	SetConsoleTextAttribute(hConsole, 14);
 	std::cout << "WARN  >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << Time::GetTime() << " >> " << text << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << Time::GetRealTime() << " >> " << text << std::endl;
 #endif // _DEBUG
 }
 
@@ -84,6 +85,6 @@ void Debug::LogWarningFormat(const char* inFormat, ...)
 	SetConsoleTextAttribute(hConsole, 14);
 	std::cout << "WARN  >> ";
 	SetConsoleTextAttribute(hConsole, 7);
-	std::cout << Time::GetTime() << " >> " << buff << std::endl;
+	std::cout << std::fixed << std::setprecision(4) << Time::GetRealTime() << " >> " << buff << std::endl;
 #endif // _DEBUG
 }

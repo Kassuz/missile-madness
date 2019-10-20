@@ -6,15 +6,9 @@
 
 #include "NetworkManagerServer.h"
 
-//ProjectileManager& ProjectileManager::Instance()
-//{
-//	static ProjectileManager instance;
-//	return instance;
-//}
 
 ProjectileManager::ProjectileManager()
 {
-	//missileTexture = ResourceManager::Instance().LoadTexture2D("Resources/Textures/Missile.png");
 }
 
 ProjectileManager::~ProjectileManager()
@@ -23,11 +17,9 @@ ProjectileManager::~ProjectileManager()
 
 void ProjectileManager::SpawnProjectile(ServerPlayer* owner, glm::vec3 position, glm::vec3 direction)
 {
-	ServerProjectile* p = NetworkManagerServer::Instance().CreateNetworkedGameObject<ServerProjectile>();
+	ServerProjectile* p = m_NetworkManagerServer->CreateNetworkedGameObject<ServerProjectile>();
 	p->InitializeProjectile(owner, position, direction);
 	m_Projectiles.push_back(p);
-	
-	//Projectile* p = new Projectile(owner, missileTexture, position, direction);
 }
 
 void ProjectileManager::Update()
@@ -39,8 +31,8 @@ void ProjectileManager::Update()
 		{
 			it = m_Projectiles.erase(it);
 
-			NetworkManagerServer::Instance().RemoveGameObject(p->GetNetworkID());
-			NetworkManagerServer::Instance().RPC().SendDestroyNetworkedGameObjectRPC(p->GetNetworkID());
+			m_NetworkManagerServer->RemoveGameObject(p->GetNetworkID());
+			m_NetworkManagerServer->RPC().SendDestroyNetworkedGameObjectRPC(p->GetNetworkID());
 			delete p;
 		}
 		else

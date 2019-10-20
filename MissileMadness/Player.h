@@ -7,6 +7,7 @@
 
 class Texture2D;
 class Move;
+class User;
 
 class Player : public NetworkedGameObject
 {
@@ -24,7 +25,7 @@ public:
 	const float GetHealth() const { return m_Health; }
 	bool IsDead() { return m_Health <= 0.0f; }
 
-	const UInt32 GetUserID() const { return m_User; }
+	const UInt32 GetUserID() const;
 
 	void ProcessMove(Move* m, float deltaT);
 
@@ -34,7 +35,7 @@ protected:
 		m_Transform.SetScale(glm::vec3(k_PlayerScale));
 	}
 
-	UInt32 m_User = 0U;
+	User* m_User = nullptr;
 
 	const float k_MaxHealth = 100.0f;
 	float m_Health = 100.0f;

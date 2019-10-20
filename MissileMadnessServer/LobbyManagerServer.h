@@ -17,7 +17,7 @@ class LobbyManagerServer
 public:
 
 	LobbyManagerServer() { }
-	~LobbyManagerServer() { }
+	~LobbyManagerServer() { SocketUtil::CleanUp(); }
 	LobbyManagerServer(const LobbyManagerServer& other) = delete;
 	LobbyManagerServer& operator=(const LobbyManagerServer& ohter) = delete;
 
@@ -30,6 +30,7 @@ private:
 	void ProcessLoginData(InputMemoryBitStream& packet, ClientConnectionPtr client);
 	void ProcessNewUser(InputMemoryBitStream& packet, ClientConnectionPtr client);
 	void ProcessClientRequest(InputMemoryBitStream& packet, ClientConnectionPtr client);
+	void ProcessMatchDataRequest(InputMemoryBitStream& packet, ClientConnectionPtr client);
 
 	void SendPacketToAllClients(OutputMemoryBitStream& packet);
 

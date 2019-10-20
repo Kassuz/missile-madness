@@ -24,8 +24,16 @@ ClientPlayer::~ClientPlayer()
 
 void ClientPlayer::Read(InputMemoryBitStream& packet)
 {
-	packet.Read(m_User);
-
+	UInt32 userID;
+	packet.Read(userID);
+	if (m_User == nullptr)
+	{
+		m_User = NetworkManagerClient::Instance().GetUserWithID(userID);
+		if (m_PlayerSprite != nullptr)
+			m_PlayerSprite->SetColor(m_User->GetCharacterColor());
+		else
+			Debug::LogError("Cant assign color. Sprite null");
+	}
 
 	packet.Read(m_InterpolatePos);
 	packet.Read(m_InterpolateRot);
@@ -74,7 +82,7 @@ void ClientPlayer::Initialize(Texture2D* playerTexture)
 
 bool ClientPlayer::IsLocal()
 {
-	return User::Me->GetUserID() == m_User;
+	return User::Me == m_User && m_User != nullptr;
 }
 
 void ClientPlayer::Update()
@@ -159,14 +167,14 @@ void ClientPlayer::Update()
 	}
 
 
-	User* u = NetworkManagerClient::Instance().GetUserWithID(m_User);
-	if (u != nullptr)
+	//User* u = NetworkManagerClient::Instance().GetUserWithID(m_User);
+	if (m_User != nullptr)
 	{
 		// Draw name
 		Color nameCol = IsLocal() ? Color::Green() : Color::Red();
 
 		glm::vec3 pos = m_Transform.GetPosition();
-		TextRenderer::Instance().RenderTextWorldSpace(u->GetUsersName(), pos.x - 20.0f, pos.y + 55.0f, 0.6f, 0.0f, nameCol);
+		TextRenderer::Instance().RenderTextWorldSpace(m_User->GetUsersName(), pos.x - 20.0f, pos.y + 55.0f, 0.6f, 0.0f, nameCol);
 	}
 }
 

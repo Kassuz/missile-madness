@@ -1,13 +1,14 @@
 #include "Player.h"
 #include "Engine.h"
 #include "Move.h"
+#include "Networking/User.h"
 
 void Player::Write(OutputMemoryBitStream& packet)
 {
 	packet.Write(GetNetworkID());
 	packet.Write(GetClassID());
 
-	packet.Write(m_User);
+	packet.Write(GetUserID());
 
 	packet.Write(m_Transform.GetPosition());
 	packet.Write(m_Transform.GetRotation());
@@ -19,7 +20,9 @@ void Player::Write(OutputMemoryBitStream& packet)
 void Player::Read(InputMemoryBitStream& packet)
 {
 	// ClassID and NetworkID have been read elsewhere
-	packet.Read(m_User);
+	UInt32 userID;
+	packet.Read(userID);
+	// Do nothing with ID, client overrrides this and server doesn't care
 
 	glm::vec3 pos;
 	packet.Read(pos);
@@ -31,6 +34,14 @@ void Player::Read(InputMemoryBitStream& packet)
 
 	packet.Read(m_Health);
 	packet.Read(m_VelocityDir);
+}
+
+const UInt32 Player::GetUserID() const
+{
+	if (m_User != nullptr)
+		return m_User->GetUserID();
+	else
+		return 0U;
 }
 
 void Player::ProcessMove(Move* move, float deltaT)

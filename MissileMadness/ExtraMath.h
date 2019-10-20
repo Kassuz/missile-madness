@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "Types.h"
+#include "Debug.h"
 
 namespace ExtraMath
 {
@@ -27,6 +28,9 @@ namespace ExtraMath
 			delete[] m_Values;
 		}
 
+		AverageValue(const AverageValue& other) = delete;
+		AverageValue& operator=(const AverageValue& other) = delete;
+
 		void AddValue(T newValue)
 		{
 			m_Values[m_Counter++ % m_ValueCount] = newValue;
@@ -41,6 +45,12 @@ namespace ExtraMath
 		}
 
 		T GetAverage() const { return m_AverageValue; }
+
+		void Clear()
+		{
+			m_Counter = 0U;
+			m_AverageValue = 0;
+		}
 
 	private:
 		T* m_Values;

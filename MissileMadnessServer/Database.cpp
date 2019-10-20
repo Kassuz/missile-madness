@@ -71,6 +71,9 @@ void PreparedStatement::ExcecuteStatement(StatementCallback callback, void* outD
 {
 	while (sqlite3_step(m_Statement) == SQLITE_ROW)
 	{
+		if (sqlite3_column_type(m_Statement, 0) == SQLITE_NULL) // Skip if column starts with null
+			continue;
+
 		if (callback != nullptr)
 			callback(m_Statement, outData);
 	}

@@ -12,14 +12,17 @@ void LobbyMenu::Draw()
 
 	switch (m_MenuState)
 	{
-	case LobbyMenu::MenuState::MAIN:
+	case MenuState::MAIN:
 		DrawMainMenu();
 		break;
-	case LobbyMenu::MenuState::COLOR:
+	case MenuState::COLOR:
 		DrawColorMenu();
 		break;
-	case LobbyMenu::MenuState::STATS:
+	case MenuState::STATS:
 		DrawStatsMenu();
+		break;
+	case MenuState::WINNER:
+		TextRenderer::Instance().RenderText("WINNER " + m_WinnerName, 100.0f, 300.0f, 2.0f, 0.0f, Color::Green());
 		break;
 	default:
 		break;
@@ -30,6 +33,14 @@ void LobbyMenu::Draw()
 	RenderingEngine::Render();
 
 	m_IsDirty = false;
+}
+
+void LobbyMenu::SetDirty()
+{
+	m_IsDirty = true;
+
+	if (m_MenuState == MenuState::WINNER)
+		m_MenuState = MenuState::MAIN;
 }
 
 void LobbyMenu::CheckInput()
@@ -109,18 +120,22 @@ void LobbyMenu::CheckInput()
 		if (InputManager::GetKeyDown(GLFW_KEY_1))
 		{
 			Debug::Log("All time stats");
+			m_LobbyManager->RequestStats(MDF_ALL_TIME);
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_2))
 		{
 			Debug::Log("Last match stats");
+			m_LobbyManager->RequestStats(MDF_LAST_MATCH);
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_3))
 		{
 			Debug::Log("Last 5 matches stats");
+			m_LobbyManager->RequestStats(MDF_FIVE_MATCHES);
 		}
 		else if (InputManager::GetKeyDown(GLFW_KEY_4))
 		{
 			m_MenuState = MenuState::MAIN;
+			m_Stats.clear(); // Clear
 			SetDirty();
 		}
 		break;
@@ -150,6 +165,26 @@ void LobbyMenu::DeletePlayer(User* u)
 	}
 }
 
+void LobbyMenu::StartGame()
+{
+	for (auto p : m_PlayerSprites)
+		p->SetActive(false);
+
+	TextRenderer::Instance().RenderText("Game Starting", 100.0f, 300.0f, 2.0f);
+	RenderingEngine::Render();
+}
+
+void LobbyMenu::ReturnToLobby(const std::string& winnerName)
+{
+	m_MenuState = MenuState::WINNER;
+	m_WinnerName = winnerName;
+
+	for (auto p : m_PlayerSprites)
+		p->SetActive(true);
+
+	m_IsDirty = true;
+}
+
 void LobbyMenu::DrawMainMenu()
 {
 	TextRenderer::Instance().RenderText("Options:", 10.0f, 100.0f, 1.5f);
@@ -165,13 +200,13 @@ void LobbyMenu::DrawColorMenu()
 	TextRenderer::Instance().RenderText("Change Color:", 10.0f, 100.0f, 1.5f);
 	TextRenderer::Instance().RenderText("----------------", 10.0f, 125.0f, 1.5f);
 	TextRenderer::Instance().RenderText("1. Black", 10.0f, 160.0f, 1.0f);
-	TextRenderer::Instance().RenderText("2. White", 10.0f, 195.0f, 1.0f);
-	TextRenderer::Instance().RenderText("3. Red", 10.0f, 230.0f, 1.0f);
-	TextRenderer::Instance().RenderText("4. Green", 10.0f, 265.0f, 1.0f);
-	TextRenderer::Instance().RenderText("5. Blue", 10.0f, 300.0f, 1.0f);
-	TextRenderer::Instance().RenderText("6. Yellow", 10.0f, 335.0f, 1.0f);
-	TextRenderer::Instance().RenderText("7. Cyan", 10.0f, 370.0f, 1.0f);
-	TextRenderer::Instance().RenderText("8. Magenta", 10.0f, 405.0f, 1.0f);
+	TextRenderer::Instance().RenderText("2. White", 10.0f, 195.0f, 1.0f, 0.0f, Color::White());
+	TextRenderer::Instance().RenderText("3. Red", 10.0f, 230.0f, 1.0f, 0.0f, Color::Red());
+	TextRenderer::Instance().RenderText("4. Green", 10.0f, 265.0f, 1.0f, 0.0f, Color::Green());
+	TextRenderer::Instance().RenderText("5. Blue", 10.0f, 300.0f, 1.0f, 0.0f, Color::Blue());
+	TextRenderer::Instance().RenderText("6. Yellow", 10.0f, 335.0f, 1.0f, 0.0f, Color::Yellow());
+	TextRenderer::Instance().RenderText("7. Cyan", 10.0f, 370.0f, 1.0f, 0.0f, Color::Cyan());
+	TextRenderer::Instance().RenderText("8. Magenta", 10.0f, 405.0f, 1.0f, 0.0f, Color::Magenta());
 
 	TextRenderer::Instance().RenderText("9. Return", 10.0f, 440.0f, 1.0f);
 
@@ -187,6 +222,12 @@ void LobbyMenu::DrawStatsMenu()
 	TextRenderer::Instance().RenderText("3. Last 5 matches", 10.0f, 230.0f, 1.0f);
 	TextRenderer::Instance().RenderText("4. Return", 10.0f, 265.0f, 1.0f);
 	TextRenderer::Instance().RenderText("----------------", 10.0f, 285.0f, 1.5f);
+
+	for (int i = 0; i < m_Stats.size(); ++i)
+	{
+		TextRenderer::Instance().RenderText(m_Stats[i], 10.0f, 350.0f + i * 35.0f, 0.6f);
+	}
+
 }
 
 void LobbyMenu::UpdatePlayers()

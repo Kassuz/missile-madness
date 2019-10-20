@@ -12,12 +12,15 @@ NetworkManagerClient& NetworkManagerClient::Instance()
 	return instance;
 }
 
-bool NetworkManagerClient::Initialize()
+bool NetworkManagerClient::Initialize(std::vector<User*> users)
 {
-	if (!SocketUtil::StaticInit())
+	m_Users = users;
+	m_ClientUser = User::Me;
+
+	if (m_ClientState != ClientState::NOT_INITIALIZED)
 	{
-		Debug::LogError("Failed to initialize sockets!");
-		return false;
+		FlushClientSocket(); // If already initialized, clear clientSocet of previous data
+		return true;
 	}
 
 	std::string address;
@@ -53,6 +56,10 @@ bool NetworkManagerClient::Initialize()
 	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::DestroyNetworkedGameObject::k_RPCName, RPCUnwrap::UnwrapDestroyNetworkedGameObject);
 	m_RPCManager.RegisterRPCUnwrapFunction(RPCParams::SetNetworkedGameObjectActive::k_RPCName, RPCUnwrap::UnwrapSetNGOBJActive);
 
+	// Register object creation functions
+	RegisterCreationFunc('PLAY', ClientGame::CreatePlayer);
+	RegisterCreationFunc('MISS', ClientGame::CreateMissile);
+
 	return true;
 }
 
@@ -66,23 +73,26 @@ void NetworkManagerClient::ProcessIncomingPackets()
 		{
 			InputMemoryBitStream packet(m_RecieveBuffer, recievedBytes * 8);
 			GameplayPacketType type;
-			packet.Read(type, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
+			packet.Read(type, GetRequiredBits<GPT_MAX_PACKET>::Value);
 
 			switch (type)
 			{
-			case GameplayPacketType::GPT_HELLO:
+			case GPT_HELLO:
 				Debug::LogError("Client should not recieve HELLO packets");
 				break;
-			case GameplayPacketType::GPT_WELCOME:
+			case GPT_WELCOME:
 				ProcessWelcomePacket(packet);
 				break;
-			case GameplayPacketType::GPT_GAME_START:
-				ProcessGameStartPacket(packet);
-				break;
-			case GameplayPacketType::GPT_REPLICATION_DATA:
+			//case GameplayPacketType::GPT_GAME_START:
+			//	ProcessGameStartPacket(packet);
+			//	break;
+			case GPT_REPLICATION_DATA:
 				ProcessReplicationData(packet);
 				break;
-			case GameplayPacketType::GPT_MAX_PACKET:
+			case GPT_GAME_ENDED:
+				ProcessGameEndedPacket(packet);
+				break;
+			case GPT_MAX_PACKET:
 				Debug::LogError("No MAX_PACKET packets should ever be sent!");
 				break;
 			default:
@@ -104,7 +114,6 @@ void NetworkManagerClient::UpdateSendingPackets()
 	{
 	case ClientState::NOT_INITIALIZED:
 	case ClientState::WAITING:
-	case ClientState::ENGINE_START:
 		// Do nothing
 		break;
 	case ClientState::NOT_REGISTERED:
@@ -118,12 +127,32 @@ void NetworkManagerClient::UpdateSendingPackets()
 	}
 }
 
-void NetworkManagerClient::InitUser(std::string userName)
-{
-	if (m_ClientUser != nullptr) delete m_ClientUser;
-	m_ClientUser = new User(userName, 0, true);
+//void NetworkManagerClient::InitUser(std::string userName)
+//{
+//	if (m_ClientUser != nullptr) delete m_ClientUser;
+//	m_ClientUser = new User(userName, 0, true);
+//
+//	User::Me = m_ClientUser;
+//}
 
-	User::Me = m_ClientUser;
+void NetworkManagerClient::EndGame()
+{
+	// Set everything back to zero
+
+	m_ClientState = ClientState::NOT_REGISTERED;
+	m_RTT.Clear();
+	m_AvgDataIntervall.Clear();
+	m_DroppedPacketCount = 0U;
+	m_LastRecievedPacket = 0.0f;
+
+	m_LastProcessedPacketID = 0U;
+	m_GameShouldStart = false;
+	m_NextHelloTime = 0.0f;
+	m_NextInputSendTime = 0.0f;
+
+	m_WinningUserID = 0U;
+
+	m_Users.clear();
 }
 
 User* NetworkManagerClient::GetUserWithID(UInt32 userID)
@@ -136,6 +165,14 @@ User* NetworkManagerClient::GetUserWithID(UInt32 userID)
 	return nullptr;
 }
 
+User* NetworkManagerClient::GetWinningUser()
+{
+	if (m_WinningUserID > 0U)
+		return GetUserWithID(m_WinningUserID);
+	else
+		return nullptr;
+}
+
 NetworkManagerClient::NetworkManagerClient() : m_RTT(20), m_AvgDataIntervall(20)
 {
 }
@@ -145,18 +182,25 @@ NetworkManagerClient::~NetworkManagerClient()
 {
 }
 
+void NetworkManagerClient::FlushClientSocket()
+{
+	Int32 recievedBytes = 0;
+	do recievedBytes = m_ClientSocket->ReceiveFrom(m_RecieveBuffer, 1500, m_RecieveAddress);
+	while (recievedBytes > 0);
+}
+
 void NetworkManagerClient::SendHelloPacket()
 {
-	if (Time::GetTime() >= m_NextHelloTime  && m_ClientUser != nullptr)
+	if (Time::GetRealTime() >= m_NextHelloTime  && m_ClientUser != nullptr)
 	{
 		Debug::Log("Send hello packet");
 		OutputMemoryBitStream helloPacket;
-		helloPacket.Write(GameplayPacketType::GPT_HELLO, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
-		helloPacket.Write(m_ClientUser->GetUsersName());
+		helloPacket.Write(GPT_HELLO, GetRequiredBits<GPT_MAX_PACKET>::Value);
+		helloPacket.Write(m_ClientUser->GetUserID());
 
 		m_ClientSocket->SendTo(helloPacket.GetBufferPtr(), helloPacket.GetByteLength(), *m_ServerAddress);
 
-		m_NextHelloTime = Time::GetTime() + k_HelloIntervall;
+		m_NextHelloTime = Time::GetRealTime() + k_HelloIntervall;
 	}
 }
 
@@ -168,7 +212,7 @@ void NetworkManagerClient::SendInputs()
 		m_NextInputSendTime = Time::GetTime() + k_InputSendIntervall;
 
 		OutputMemoryBitStream packet;
-		packet.Write(GameplayPacketType::GPT_REPLICATION_DATA, GetRequiredBits<GameplayPacketType::GPT_MAX_PACKET>::Value);
+		packet.Write(GPT_REPLICATION_DATA, GetRequiredBits<GPT_MAX_PACKET>::Value);
 		packet.Write(m_ClientUser->GetUserID()); // Write user id just to be sure
 		m_ClientUser->WriteMoves(packet);
 
@@ -184,13 +228,8 @@ void NetworkManagerClient::ProcessWelcomePacket(InputMemoryBitStream& packet)
 {
 	if (m_ClientState == ClientState::NOT_REGISTERED)
 	{
-		UInt32 newID;
-		packet.Read(newID);
-
-		m_ClientUser->SetUserID(newID);
+		Debug::Log("UDP connection established!");
 		m_ClientState = ClientState::WAITING;
-
-		Debug::LogFormat("Client welcomed, new id: %i", newID);
 	}
 	else
 	{
@@ -198,49 +237,51 @@ void NetworkManagerClient::ProcessWelcomePacket(InputMemoryBitStream& packet)
 	}
 }
 
-void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
-{
-	if (m_ClientState != ClientState::WAITING)
-		return;
-
-	for (auto it : m_Users)
-		delete it;
-	m_Users.clear();
-
-	UInt32 userCount;
-	packet.Read(userCount, 32);
-
-	std::string userName;
-	UInt32 userID;
-	Debug::Log("Game start! Users:");
-	for (int i = 0; i < userCount; ++i)
-	{
-		packet.Read(userName);
-		packet.Read(userID);
-
-		Debug::LogFormat("\t%s, ID: %u", userName.c_str(), userID);
-
-		if (userID == m_ClientUser->GetUserID())
-		{
-			m_Users.push_back(m_ClientUser);
-		}
-		else
-		{
-			m_Users.push_back(new User(userName, userID));
-		}
-	}
-
-	// Get replication data send intervall for interpolation
-	//float intervall;
-	//packet.Read(intervall);
-	//ClientGame::SetDataIntervall(intervall);
-
-	m_GameShouldStart = true;
-	m_ClientState = ClientState::ENGINE_START;
-}
+//void NetworkManagerClient::ProcessGameStartPacket(InputMemoryBitStream& packet)
+//{
+//	if (m_ClientState != ClientState::WAITING)
+//		return;
+//
+//	for (auto it : m_Users)
+//		delete it;
+//	m_Users.clear();
+//
+//	UInt32 userCount;
+//	packet.Read(userCount, 32);
+//
+//	std::string userName;
+//	UInt32 userID;
+//	Debug::Log("Game start! Users:");
+//	for (int i = 0; i < userCount; ++i)
+//	{
+//		packet.Read(userName);
+//		packet.Read(userID);
+//
+//		Debug::LogFormat("\t%s, ID: %u", userName.c_str(), userID);
+//
+//		if (userID == m_ClientUser->GetUserID())
+//		{
+//			m_Users.push_back(m_ClientUser);
+//		}
+//		else
+//		{
+//			m_Users.push_back(new User(userName, userID));
+//		}
+//	}
+//
+//	// Get replication data send intervall for interpolation
+//	//float intervall;
+//	//packet.Read(intervall);
+//	//ClientGame::SetDataIntervall(intervall);
+//
+//	m_GameShouldStart = true;
+//	m_ClientState = ClientState::ENGINE_START;
+//}
 
 void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 {
+	if (m_ClientState == ClientState::WAITING)
+		m_GameShouldStart = true;
 	if (m_ClientState != ClientState::REPLICATING)
 		return;
 
@@ -309,6 +350,12 @@ void NetworkManagerClient::ProcessReplicationData(InputMemoryBitStream& packet)
 	else
 		m_AvgDataIntervall.AddValue(0.0f);
 	m_LastRecievedPacket = Time::GetTime();
+}
+
+void NetworkManagerClient::ProcessGameEndedPacket(InputMemoryBitStream& packet)
+{
+	m_ClientState = ClientState::GAME_ENDED;
+	packet.Read(m_WinningUserID);	
 }
 
 void NetworkManagerClient::CalculateRTT(float timestamp)

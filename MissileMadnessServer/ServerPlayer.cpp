@@ -8,7 +8,7 @@
 #include "Move.h"
 #include "ServerGame.h"
 
-void ServerPlayer::Initialize(UInt32 controllingUser, ServerGame* game)
+void ServerPlayer::Initialize(User* controllingUser, ServerGame* game)
 {
 	m_User = controllingUser;
 	m_Game = game;
@@ -16,8 +16,7 @@ void ServerPlayer::Initialize(UInt32 controllingUser, ServerGame* game)
 
 void ServerPlayer::Update()
 {
-	User* user = NetworkManagerServer::Instance().GetUserWithID(m_User);
-	if (user == nullptr)
+	if (m_User == nullptr)
 	{
 		Debug::LogErrorFormat("Couldn't find user with id: %u. User might have disconnected. Player removed!", m_User);
 		m_Game->HandlePlayerDisconnect(this);
@@ -28,8 +27,8 @@ void ServerPlayer::Update()
 
 	for (UInt32 i = 0; i < k_MaxMovesPerUpdate; ++i)
 	{
-		float lastTimestamp = user->GetLastProcessedMoveTimestamp();
-		Move* move = user->GetFirstMove();
+		float lastTimestamp = m_User->GetLastProcessedMoveTimestamp();
+		Move* move = m_User->GetFirstMove();
 
 		if (move != nullptr)
 		{
@@ -67,13 +66,19 @@ void ServerPlayer::Update()
 	//m_ProjectileTimer -= Time::deltaTime;
 }
 
-void ServerPlayer::TakeDamage(float damage)
+bool ServerPlayer::TakeDamage(float damage)
 {
-
 	this->m_Health -= damage;
 
 	if (IsDead())
+	{
 		SetActive(false);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void ServerPlayer::Reset(glm::vec3 respawnPos)
@@ -87,7 +92,6 @@ void ServerPlayer::Reset(glm::vec3 respawnPos)
 void ServerPlayer::ShootProjectile()
 {
 	m_ProjectileTimer = k_ProjectileCooldown;
-
 
 	glm::vec3 missilePos = glm::vec3(m_Transform.GetModel() * k_ShootPos);
 	m_Game->GetProjectileManager().SpawnProjectile(this, missilePos, m_Transform.GetUp());

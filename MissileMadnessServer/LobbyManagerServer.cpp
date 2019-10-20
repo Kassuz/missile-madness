@@ -1,7 +1,10 @@
 #include "LobbyManagerServer.h"
 
 #include "Debug.h"
+#include "MMTime.h"
 #include "Networking/PacketTypes.h"
+
+#include "ServerGame.h"
 
 void LobbyManagerServer::Start()
 {
@@ -95,7 +98,67 @@ void LobbyManagerServer::Start()
 
 		// If all clients are ready, start the game
 		//--------------------------------------------------------------
-		// Game.Start()
+		bool ready = m_ClientConnections.size() >= 2;
+		for (auto conn : m_ClientConnections)
+			if (conn->GetUser() == nullptr || !conn->GetUser()->IsReady()) ready = false;
+		
+		if (ready)
+		{
+			Debug::Log("Everyone is ready! Starting game!");
+
+			// Send game start packet
+			OutputMemoryBitStream gameStartPacket;
+			gameStartPacket.Write(LPT_GAME_START, GetRequiredBits<LPT_MAX_PACKET>::Value);
+			// Send UDP address??
+			SendPacketToAllClients(gameStartPacket);
+
+			UInt64 matchStart = Time::GetUnixTimeStamp();
+			float startSeconds = Time::GetRealTime();
+
+			ServerGame game(800U, 600U);
+			if (game.StartGame(m_ClientConnections))
+			{
+				// Game Ended successfully
+				Debug::Log("Game Ended successfully");
+
+				float matchDuration = Time::GetRealTime() - startSeconds;
+				m_DatabaseManager.SaveMatchData(matchStart, m_ClientConnections.size(), matchDuration, game.GetGameStats());
+			}
+			else
+			{
+				// Error in game
+				Debug::LogError("Game had error");
+			}
+
+			// Check for disconnects
+			for (int i = 0; i < m_ClientConnections.size(); /* */)
+			{
+				ClientConnectionPtr conn = m_ClientConnections[i];
+				if (conn->GetConnectionStatus() == ConnectionStatus::DISCONNECTED)
+				{
+					m_ClientConnections.erase(m_ClientConnections.begin() + i);
+					ClientDisconnected(conn->GetUser()->GetUserID());
+				}
+				else
+				{
+					conn->GetUser()->SetReady(false);
+					++i;
+				}
+			}
+
+			// Send userData
+			if (m_ClientConnections.size() > 0)
+			{
+				OutputMemoryBitStream userData;
+				userData.Write(LPT_USER_DATA, GetRequiredBits<LPT_MAX_PACKET>::Value);
+				userData.Write(m_ClientConnections.size(), 32);
+				for (auto conn : m_ClientConnections)
+				{
+					conn->GetUser()->Write(userData);
+				}
+				SendPacketToAllClients(userData);
+			}
+		}
 	}
 }
 
@@ -236,12 +299,49 @@ void LobbyManagerServer::ProcessClientRequest(InputMemoryBitStream& packet, Clie
 		break;
 	}
 	case CR_MATCH_DATA:
+		ProcessMatchDataRequest(packet, client);
 		break;
 	case CR_MAX_REQ:
 		break;
 	default:
 		break;
 	}
+}
+
+void LobbyManagerServer::ProcessMatchDataRequest(InputMemoryBitStream& packet, ClientConnectionPtr client)
+{
+	MatchDataFormat format; packet.Read(format, GetRequiredBits<MDF_MAX_FORMAT>::Value);
+
+	std::vector<std::string> matchData;
+
+	switch (format)
+	{
+	case MDF_ALL_TIME:
+		matchData = m_DatabaseManager.GetAllTimeStatsForUser(client->GetUser()->GetUserID());
+		break;
+	case MDF_LAST_MATCH:
+		matchData = m_DatabaseManager.GetLastMatchStatsForUser(client->GetUser()->GetUserID());
+		break;
+	case MDF_FIVE_MATCHES:
+		matchData = m_DatabaseManager.GetLast5MatchesStatsForUser(client->GetUser()->GetUserID());
+		break;
+	case MDF_MAX_FORMAT:
+		Debug::LogError("Shouldn't request MAX_FORMAT stats!!!");
+		break;
+	default:
+		break;
+	}
+
+	OutputMemoryBitStream response;
+	response.Write(LPT_MATCH_DATA, GetRequiredBits<LPT_MAX_PACKET>::Value);
+	//response.Write(format, GetRequiredBits<MDF_MAX_FORMAT>::Value);
+	response.Write(matchData.size());
+	for (auto s : matchData)
+	{
+		response.Write(s);
+	}
+
+	client->GetTCPSocket()->Send(response.GetBufferPtr(), response.GetByteLength());
 }
 
 void LobbyManagerServer::SendPacketToAllClients(OutputMemoryBitStream& packet)

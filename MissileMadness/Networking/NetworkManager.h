@@ -23,7 +23,7 @@ public:
 
 	virtual ~NetworkManager() { }
 
-	virtual bool Initialize() = 0;
+	//virtual bool Initialize() = 0;
 	virtual void ProcessIncomingPackets() = 0;
 
 	virtual void UpdateSendingPackets() = 0;

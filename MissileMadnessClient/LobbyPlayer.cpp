@@ -18,6 +18,8 @@ LobbyPlayer::~LobbyPlayer()
 
 void LobbyPlayer::Update()
 {
+	if (!m_IsActive) return;
+
 	m_Sprite->SetColor(m_User->GetCharacterColor());
 
 	glm::vec3 pos = m_Transform.GetPosition();

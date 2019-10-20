@@ -3,17 +3,19 @@
 #include "Player.h"
 
 class ServerGame;
+class User;
 
 class ServerPlayer : public Player
 {
 public:
 	static NetworkedGameObject* CreateInstance(UInt32 networkID) { return static_cast<NetworkedGameObject*>(new ServerPlayer(networkID)); }
 
-	void Initialize(UInt32 controllingUser, ServerGame* game);
+	void Initialize(User* controllingUser, ServerGame* game);
 
 	void Update();
 
-	void TakeDamage(float damage);
+	// Returns true if killed
+	bool TakeDamage(float damage);
 	void Reset(glm::vec3 respawnPos);
 
 private:

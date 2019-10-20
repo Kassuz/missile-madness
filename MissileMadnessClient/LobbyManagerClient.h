@@ -2,6 +2,7 @@
 
 #include "Networking/Sockets.h"
 #include "Networking/MemoryBitStream.h"
+#include "Networking/PacketTypes.h"
 
 #include "Types.h"
 #include "LobbyMenu.h"
@@ -16,7 +17,7 @@ class LobbyManagerClient
 {
 public:
 	LobbyManagerClient() : m_LobbyMenu(this) { }
-	~LobbyManagerClient() { }
+	~LobbyManagerClient() { SocketUtil::CleanUp(); }
 	LobbyManagerClient(const LobbyManagerClient& other) = delete;
 	LobbyManagerClient& operator=(const LobbyManagerClient& ohter) = delete;
 
@@ -24,6 +25,7 @@ public:
 
 	void SetReady();
 	void ChangeUserColor(Color newColor);
+	void RequestStats(MatchDataFormat type);
 
 private:
 	enum class LobbyStatus { LOGIN_MENU, LOGGED_IN, EXIT };
@@ -40,6 +42,8 @@ private:
 	const float k_ReconnectIntervall = 5.0f;
 
 	LobbyMenu m_LobbyMenu;
+
+	bool m_GameShouldStart = false;
 
 	void ProcessPackets();
 
