@@ -6,5 +6,6 @@ To compile:
 - GLAD (Generate headers and glad.c)
 - GLM 0.9.8.5 (Headers)
 - Freetype 2.10.0 (Headers and lib) (ft2build.h has to bee in include directory root with freetype folder)
+- Libsodium 1.0.18 (Headers and lib)
 
 These could have been included, but I'm too lazy

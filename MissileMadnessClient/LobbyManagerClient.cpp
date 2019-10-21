@@ -289,6 +289,15 @@ void LobbyManagerClient::ProcessServerResponse(InputMemoryBitStream& packet)
 	case SR_USER_ALREADY_EXISTS:
 		Debug::LogError("User with that name already exists! Please choose different name");
 		break;
+	case SR_USERNAME_LENGTH_BAD:
+		Debug::LogError("Username should be between 3 and 50 characters!");
+		break;
+	case SR_PASSWORD_LENGTH_BAD:
+		Debug::LogError("Password should be between 3 and 50 characters!");
+		break;
+	case SR_SERVER_ERROR:
+		Debug::LogError("Server had an error!");
+		break;
 	case SR_MAX_RESPONSE:
 		Debug::LogError("MAX_RESPONSE should never be sent!");
 		break;

@@ -23,7 +23,7 @@ public:
 
 	bool Init();
 
-	void AddNewUser(std::string name, std::string pw);
+	bool AddNewUser(std::string name, std::string pw);
 	void PrintUsers();
 
 	bool UserExists(std::string username);

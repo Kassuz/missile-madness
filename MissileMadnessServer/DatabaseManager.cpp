@@ -4,6 +4,7 @@
 
 #include "ServerGame.h"
 #include "MMTime.h"
+#include "Crypto.h"
 
 //------------------------------------------
 //-               Callbacks                -
@@ -22,7 +23,7 @@ namespace
 	struct UserData
 	{
 		UInt32 userID;
-		std::string username, password;
+		std::string username, passwordHash;
 	};
 
 	void GetUserCallback(sqlite3_stmt* s, void* outData)
@@ -31,7 +32,7 @@ namespace
 
 		data->userID = sqlite3_column_int(s, 0);
 		data->username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(s, 1)));
-		data->password = std::string(reinterpret_cast<const char*>(sqlite3_column_text(s, 2)));
+		data->passwordHash = std::string(reinterpret_cast<const char*>(sqlite3_column_text(s, 2)));
 	}
 
 	void GetColorCallback(sqlite3_stmt* s, void* outData)
@@ -198,12 +199,20 @@ bool DatabaseManager::Init()
 }
 
 
-void DatabaseManager::AddNewUser(std::string name, std::string pw)
+bool DatabaseManager::AddNewUser(std::string name, std::string pw)
 {
-	m_AddUser->BindString(name, 1);
-	m_AddUser->BindString(pw, 2);
-	m_AddUser->ExcecuteStatement();
-
+	std::string passwordHash;
+	if (Crypto::HashPassword(pw, passwordHash))
+	{
+		m_AddUser->BindString(name, 1);
+		m_AddUser->BindString(passwordHash, 2);
+		m_AddUser->ExcecuteStatement();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void DatabaseManager::PrintUsers()
@@ -223,15 +232,16 @@ bool DatabaseManager::UserExists(std::string username)
 
 bool DatabaseManager::Login(std::string username, std::string password, UInt32& outUserID)
 {
-	m_GetUser->BindString(username, 1);
-
 	UserData userData;
 
+	m_GetUser->BindString(username, 1);
 	m_GetUser->ExcecuteStatement(GetUserCallback, &userData);
 	
 	outUserID = userData.userID;
 
-	if (userData.username == username && userData.password == password)
+	bool passwordMatches = Crypto::VerifyPassword(password, userData.passwordHash);
+
+	if (userData.username == username && passwordMatches)
 		return true;
 	else
 		return false;

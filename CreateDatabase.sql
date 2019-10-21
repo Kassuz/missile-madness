@@ -17,8 +17,8 @@ drop table users;
 
 create table users (
     userID      integer primary key,
-    username    varchar(255) not null,
-    password    char(255) not NULL
+    username    varchar(50) not null,
+    password    char(128) not null -- Passwords hashed with Argon2 using libsodium hash length is 128
 );
 
 create table characters (

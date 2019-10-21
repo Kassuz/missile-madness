@@ -5,6 +5,7 @@
 #include "Networking/PacketTypes.h"
 
 #include "ServerGame.h"
+#include "Crypto.h"
 
 void LobbyManagerServer::Start()
 {
@@ -12,7 +13,13 @@ void LobbyManagerServer::Start()
 	//--------------------------------------------------------------
 	if (!m_DatabaseManager.Init())
 	{
-		Debug::LogError("DatabaseManager::Init faied!");
+		Debug::LogError("DatabaseManager::Init failed!");
+		return;
+	}
+
+	if (!Crypto::InitCrypto())
+	{
+		Debug::LogError("Crypto::InitCrypto failed!");
 		return;
 	}
 
@@ -256,15 +263,24 @@ void LobbyManagerServer::ProcessNewUser(InputMemoryBitStream& packet, ClientConn
 	OutputMemoryBitStream response;
 	response.Write(LPT_SERVER_RESPONSE, GetRequiredBits<LPT_MAX_PACKET>::Value);
 
-
-	if (m_DatabaseManager.UserExists(username))
+	if (username.length() > k_MaxUsernamePWLength || username.length() < k_MinUsernamePWLength)
+	{
+		response.Write(SR_USERNAME_LENGTH_BAD, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+	}
+	else if (password.length() > k_MaxUsernamePWLength || password.length() < k_MinUsernamePWLength)
+	{
+		response.Write(SR_PASSWORD_LENGTH_BAD, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+	}
+	else if (m_DatabaseManager.UserExists(username))
 	{
 		response.Write(SR_USER_ALREADY_EXISTS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
 	}
 	else
 	{
-		m_DatabaseManager.AddNewUser(username, password);
-		response.Write(SR_USER_CREATE_SUCCESS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+		if (m_DatabaseManager.AddNewUser(username, password))
+			response.Write(SR_USER_CREATE_SUCCESS, GetRequiredBits<SR_MAX_RESPONSE>::Value);
+		else
+			response.Write(SR_SERVER_ERROR, GetRequiredBits<SR_MAX_RESPONSE>::Value);
 
 		// Test print
 		m_DatabaseManager.PrintUsers();

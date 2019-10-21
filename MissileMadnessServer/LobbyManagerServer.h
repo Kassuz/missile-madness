@@ -47,5 +47,8 @@ private:
 	std::vector<ClientConnectionPtr> m_ClientConnections;
 
 	Byte m_RecieveBuffer[1500];
+
+	const UInt32 k_MaxUsernamePWLength = 50;
+	const UInt32 k_MinUsernamePWLength = 3U;
 };
 
