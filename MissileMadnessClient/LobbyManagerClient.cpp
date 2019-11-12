@@ -3,6 +3,7 @@
 #include "Networking/User.h"
 #include "Engine.h"
 #include "ClientGame.h"
+#include "CommandLineArgs.h"
 
 #include <iostream>
 #include <thread>
@@ -22,7 +23,13 @@ void LobbyManagerClient::Start()
 		return;
 	}
 
-	SocketAddressPtr serverAddress = SocketUtil::CreateSocketAddress(SERVER_ADDRESS_TCP);
+	std::string address;
+	if (CommandLineArgs::UseCustomServerAddress())
+		address = CommandLineArgs::GetServerAddress();
+	else
+		address = SERVER_ADDRESS_TCP;
+
+	SocketAddressPtr serverAddress = SocketUtil::CreateSocketAddress(address);
 	if (serverAddress == nullptr)
 	{
 		Debug::LogError("Creating server adress failed!");

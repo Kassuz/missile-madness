@@ -52,7 +52,6 @@ namespace
 		float matchDuration = 0.0f;
 	};
 
-	// Todo maybe just one sql command
 	void GetMostRecentMatchCallback(sqlite3_stmt* s, void* outData)
 	{
 		UInt32* id = static_cast<UInt32*>(outData);

@@ -1,6 +1,10 @@
 # missile-madness
 Simple Client-Server gameproject for school
 
+Network and database documentation: https://docs.google.com/document/d/1HWoq_5EwRX6J1RybP_sQ6sC4D4iJvmFdjrrOBtAO_LM/edit?usp=sharing 
+
+Video: https://youtu.be/OseN8CfqqMY
+
 To compile:
 - GLFW3 3.2.1 (Headers and lib)
 - GLAD (Generate headers and glad.c)
